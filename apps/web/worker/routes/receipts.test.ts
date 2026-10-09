@@ -82,10 +82,10 @@ test('extracts a receipt draft without writing inventory, products, R2, or D1 im
   await createHousehold(db, 'user-1', 'Casa mea')
 
   const r2Puts: string[] = []
-  const gateways: unknown[] = []
+  const requests: unknown[] = []
   const env = {
-    ...envWithDb(db, async (_model, _inputs, options) => {
-      gateways.push(options)
+    ...envWithDb(db, async (model, inputs) => {
+      requests.push({ model, inputs })
       return { response: lidlDraft() }
     }),
     R2: {
@@ -111,9 +111,11 @@ test('extracts a receipt draft without writing inventory, products, R2, or D1 im
   expect(db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE '%receipt%'`).all()).toEqual([
     { name: 'receipt_ai_rate_limits' },
   ])
-  expect(gateways).toEqual([
-    { gateway: { id: 'default', skipCache: true, collectLog: false } },
-  ])
+  expect(requests).toHaveLength(1)
+  expect(requests[0]).toMatchObject({
+    model: 'gemini-2.5-flash',
+    inputs: { contents: [{ parts: [{ text: expect.any(String) }, { inlineData: { mimeType: 'image/jpeg' } }] }] },
+  })
 })
 
 test('partial OCR, missing total, and no hallucinated inventory writes', async () => {

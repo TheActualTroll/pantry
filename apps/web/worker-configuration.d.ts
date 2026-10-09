@@ -4,11 +4,11 @@
 interface __BaseEnv_CloudflareBindings {
 	R2: R2Bucket;
 	DB: D1Database;
-	AI: Ai;
-	AI_MODEL: "@cf/meta/llama-4-scout-17b-16e-instruct";
-	RECEIPT_AI_MODEL: "@cf/google/gemma-4-26b-a4b-it";
+	AI_MODEL: "gemini-2.5-flash";
+	RECEIPT_AI_MODEL: "gemini-2.5-flash";
 	BETTER_AUTH_SECRET: string;
 	BETTER_AUTH_URL: string;
+	GEMINI_API_KEY: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
@@ -21,7 +21,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AI_MODEL" | "RECEIPT_AI_MODEL" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AI_MODEL" | "RECEIPT_AI_MODEL" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "GEMINI_API_KEY">> {}
 }
 
 // Begin runtime types

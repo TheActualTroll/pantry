@@ -14,7 +14,7 @@ import {
 import { createD1HouseholdStore, createD1ProductStore, createD1ReceiptStore } from '@pantry/database/d1'
 import { requireAuth } from '../auth/authorize.js'
 import { ensureProfile } from '../profiles/profile.js'
-import { createWorkersAiReceiptProvider } from '../ai/receipt-provider.js'
+import { createGeminiReceiptProvider } from '../ai/receipt-provider.js'
 
 export const receipts = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -113,12 +113,13 @@ receipts.post('/receipts/extract', async (c) => {
     }
 
     const model: string = c.env.RECEIPT_AI_MODEL
-    if (!model || !c.env.AI) {
+    const apiKey: string | undefined = c.env.GEMINI_API_KEY
+    if (!model || !apiKey) {
       throw new DomainError('AI_UNAVAILABLE', 'AI_UNAVAILABLE')
     }
 
     imageDataUri = bytesToDataUri(image.bytes, image.mimeType)
-    const provider: ReceiptVisionProvider = createWorkersAiReceiptProvider(c.env.AI, model)
+    const provider: ReceiptVisionProvider = createGeminiReceiptProvider(apiKey, model)
     const raw = await provider.extractReceipt({ imageDataUri })
     imageDataUri = null
 

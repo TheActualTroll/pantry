@@ -13,7 +13,7 @@ import {
 import { createD1HouseholdStore, createD1InventoryStore, createD1RecipeStore } from '@pantry/database/d1'
 import { requireAuth } from '../auth/authorize.js'
 import { ensureProfile } from '../profiles/profile.js'
-import { createWorkersAiProvider } from '../ai/workers-ai-provider.js'
+import { createGeminiRecipeProvider } from '../ai/gemini-recipe-provider.js'
 
 export const ai = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -113,14 +113,15 @@ ai.post('/ai/recipes/generate', async (c) => {
     const items = await inventoryStore(c.env.DB).getInventory({ householdId: household.id })
     const request = parseRecipeGenerationRequest(payload)
     const model: string = c.env.AI_MODEL
-    if (!model || !c.env.AI) {
+    const apiKey: string | undefined = c.env.GEMINI_API_KEY
+    if (!model || !apiKey) {
       throw new DomainError('AI_UNAVAILABLE', 'AI_UNAVAILABLE')
     }
 
     const generated = await generateRecipeFromInventory({
       inventory: items,
       request,
-      provider: createWorkersAiProvider(c.env.AI, model),
+      provider: createGeminiRecipeProvider(apiKey, model),
     })
     const recipe = await recipes.createGeneratedRecipe({
       householdId: household.id,

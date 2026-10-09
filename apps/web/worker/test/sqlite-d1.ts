@@ -103,20 +103,22 @@ export function envWithDb(
   aiRun?: (model: string, inputs: unknown, options?: unknown) => Promise<unknown>,
   r2: MemoryR2 = memoryR2(),
 ) {
+  if (aiRun) {
+    // Route Gemini REST calls to the stub. Result shapes: `{ response }` object/string is the model text.
+    globalThis.fetch = (async (url: unknown, init?: RequestInit) => {
+      const model = /models\/([^:]+):generateContent/.exec(String(url))?.[1] ?? ''
+      const result = (await aiRun(model, JSON.parse(String(init?.body)), init)) as { response?: unknown }
+      const text = typeof result.response === 'string' ? result.response : JSON.stringify(result.response)
+      return Response.json({ candidates: [{ content: { parts: [{ text }] } }] })
+    }) as typeof fetch
+  }
   return {
     DB: sqliteAsD1(db),
     BETTER_AUTH_SECRET: TEST_SECRET,
     BETTER_AUTH_URL: TEST_URL,
-    AI_MODEL: '@cf/meta/llama-4-scout-17b-16e-instruct',
-    RECEIPT_AI_MODEL: '@cf/google/gemma-4-26b-a4b-it',
+    AI_MODEL: 'gemini-2.5-flash',
+    RECEIPT_AI_MODEL: 'gemini-2.5-flash',
     R2: r2,
-    AI: {
-      async run(model: string, inputs: unknown, options?: unknown) {
-        if (!aiRun) {
-          throw new Error('AI binding not stubbed')
-        }
-        return aiRun(model, inputs, options)
-      },
-    },
+    GEMINI_API_KEY: 'test-gemini-key',
   }
 }

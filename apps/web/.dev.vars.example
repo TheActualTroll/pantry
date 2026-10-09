@@ -7,6 +7,8 @@
 BETTER_AUTH_SECRET=replace-with-a-32-plus-character-local-secret
 BETTER_AUTH_URL=http://localhost:5173
 
+# Google Gemini API key (https://aistudio.google.com/apikey)
+GEMINI_API_KEY=replace-with-your-gemini-api-key
+
 # Future:
 # EMAIL_API_KEY=
-# AI_PROVIDER_API_KEY=

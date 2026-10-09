@@ -1,15 +1,18 @@
 import { expect, test } from 'vitest'
-import { parseWorkersAiReceiptResponse } from './receipt-provider'
+import { parseGeminiJsonResponse } from './gemini'
 
-test('parses structured receipt responses from Workers AI wrappers', () => {
+test('parses structured JSON from Gemini candidates', () => {
   expect(
-    parseWorkersAiReceiptResponse({
-      response: { merchant: 'Lidl', items: [{ rawName: 'LAPTE', name: 'Lapte' }] },
-    }),
+    parseGeminiJsonResponse(
+      { candidates: [{ content: { parts: [{ text: '{"merchant":"Lidl","items":[]}' }] } }] },
+      'RECEIPT_EXTRACTION_FAILED',
+    ),
   ).toMatchObject({ merchant: 'Lidl' })
-  expect(
-    parseWorkersAiReceiptResponse({
-      choices: [{ message: { content: '{"merchant":"Lidl","items":[]}' } }],
-    }),
-  ).toMatchObject({ merchant: 'Lidl' })
+})
+
+test('rejects Gemini responses without parseable JSON', () => {
+  expect(() => parseGeminiJsonResponse({ candidates: [] }, 'RECEIPT_EXTRACTION_FAILED')).toThrow()
+  expect(() =>
+    parseGeminiJsonResponse({ candidates: [{ content: { parts: [{ text: 'nope' }] } }] }, 'AI_GENERATION_FAILED'),
+  ).toThrow()
 })

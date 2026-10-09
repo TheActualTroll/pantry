@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { cloudflare } from '@cloudflare/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -8,6 +9,22 @@ import { VitePWA } from 'vite-plugin-pwa'
 const pantryBackground = '#f7fbf8'
 
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 4173,
+    https: {
+      key: fs.readFileSync('./certs/local.key'),
+      cert: fs.readFileSync('./certs/local.crt'),
+    },
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    https: {
+      key: fs.readFileSync('./certs/local.key'),
+      cert: fs.readFileSync('./certs/local.crt'),
+    },
+  },
   plugins: [
     tailwindcss(),
     react(),

@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { cloudflare } from '@cloudflare/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -10,8 +11,15 @@ const pantryBackground = '#f4f9f6'
 /** `DEPLOY_TARGET=node` builds the plain static client for the Node/Railway server. */
 const nodeTarget = process.env.DEPLOY_TARGET === 'node'
 
+const localHttps =
+  !nodeTarget && fs.existsSync('./certs/local.key') && fs.existsSync('./certs/local.crt')
+    ? { key: fs.readFileSync('./certs/local.key'), cert: fs.readFileSync('./certs/local.crt') }
+    : undefined
+
 export default defineConfig({
   build: nodeTarget ? { outDir: 'dist/client', emptyOutDir: true } : undefined,
+  // Optional local HTTPS (phone testing: camera and push need a secure context).
+  ...(localHttps ? { server: { host: '0.0.0.0', port: 4173, https: localHttps }, preview: { host: '0.0.0.0', port: 4173, https: localHttps } } : {}),
   plugins: [
     tailwindcss(),
     react(),

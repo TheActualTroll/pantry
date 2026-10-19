@@ -64,7 +64,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
 
   const publicUrl = resolvePublicUrl(env, production)
   const dataDir = resolve(env.DATA_DIR?.trim() || (production ? '/data' : './data'))
-  const trustedOrigins = (env.TRUSTED_ORIGINS ?? '')
+  const trustedOrigins = (env.TRUSTED_ORIGINS ?? env.BETTER_AUTH_TRUSTED_ORIGINS ?? '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)
@@ -84,8 +84,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     trustedOrigins,
     trustedProxyHops: int(env.TRUSTED_PROXY_HOPS, 1, 0, 5),
     geminiApiKey: env.GEMINI_API_KEY?.trim() || undefined,
-    aiModel: env.AI_MODEL?.trim() || 'gemini-2.5-flash',
-    receiptAiModel: env.RECEIPT_AI_MODEL?.trim() || 'gemini-2.5-flash',
+    aiModel: env.AI_MODEL?.trim() || 'gemini-3.5-flash-lite',
+    receiptAiModel: env.RECEIPT_AI_MODEL?.trim() || 'gemini-3.5-flash-lite',
     vapidPublicKey: env.VAPID_PUBLIC_KEY?.trim() || undefined,
     vapidPrivateKey: env.VAPID_PRIVATE_KEY?.trim() || undefined,
     vapidSubject: env.VAPID_SUBJECT?.trim() || `mailto:admin@${new URL(publicUrl).hostname}`,

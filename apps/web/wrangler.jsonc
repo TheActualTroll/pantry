@@ -11,8 +11,8 @@
   // Public non-secret vars may be committed here.
   "vars": {
     "BETTER_AUTH_URL": "https://pantry.alexandrubala94.workers.dev",
-    "AI_MODEL": "gemini-2.5-flash",
-    "RECEIPT_AI_MODEL": "gemini-2.5-flash",
+    "AI_MODEL": "gemini-3.5-flash-lite",
+    "RECEIPT_AI_MODEL": "gemini-3.5-flash-lite",
   },
   // Vite plugin sets assets.directory from the client build. Do not set it here.
   // /api/* → Worker first. Everything else → static assets / React SPA fallback.

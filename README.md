@@ -120,7 +120,7 @@ The Worker owns secrets and third-party credentials.
 
 - `BETTER_AUTH_SECRET` — required production secret (Cloudflare Worker secret). Local: `apps/web/.dev.vars`. Never commit the value.
 - `GEMINI_API_KEY` — Google Gemini API key (AI recipes and receipt OCR). Cloudflare Worker secret. Local: `apps/web/.dev.vars`.
-- `AI_MODEL` / `RECEIPT_AI_MODEL` — public Gemini model ids in `apps/web/wrangler.jsonc` `vars` (default `gemini-2.5-flash`).
+- `AI_MODEL` / `RECEIPT_AI_MODEL` — public Gemini model ids in `apps/web/wrangler.jsonc` `vars` (default `gemini-3.5-flash-lite`).
 - `BETTER_AUTH_URL` — public Better Auth base URL. Production is set in `apps/web/wrangler.jsonc` `vars`. Local: `http://localhost:5173` in `.dev.vars`.
 
 Expected later: transactional email key.

@@ -6,6 +6,12 @@ export const RECEIPT_MAX_ITEMS = 80
 export const RECEIPT_WEIGHT_UNITS = ['g', 'kg', 'ml', 'l'] as const
 export type ReceiptWeightUnit = (typeof RECEIPT_WEIGHT_UNITS)[number]
 
+export const RECEIPT_CATEGORIES = ['food', 'household'] as const
+export type ReceiptCategory = (typeof RECEIPT_CATEGORIES)[number]
+
+/** Longest shelf life the model may suggest. Anything longer is treated as unknown. */
+export const RECEIPT_MAX_SHELF_LIFE_DAYS = 1095
+
 export type ReceiptDraftItem = {
   rawName: string
   name: string
@@ -15,6 +21,10 @@ export type ReceiptDraftItem = {
   weightValue: number | null
   weightUnit: ReceiptWeightUnit | null
   confidence: number | null
+  /** food vs household goods (cleaning, paper, hygiene). */
+  category: ReceiptCategory
+  /** Typical days until it spoils once bought; null for non-perishables. */
+  shelfLifeDays: number | null
 }
 
 export type ReceiptDraft = {

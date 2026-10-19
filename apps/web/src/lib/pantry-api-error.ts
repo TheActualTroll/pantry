@@ -1,3 +1,4 @@
+import { t } from '../i18n/index'
 import { isPantryApiError } from './api'
 
 export const NETWORK_PANTRY_FAILURE_MESSAGE =
@@ -49,7 +50,7 @@ export const PRODUCT_IMAGE_TOO_LARGE_MESSAGE =
   'Imaginea e prea mare. Fă o poză mai apropiată sau alege o imagine mai mică.'
 
 export function insufficientStockMessage(availableLabel: string): string {
-  return `Nu ai suficient stoc. Disponibil: ${availableLabel}`
+  return t('Nu ai suficient stoc. Disponibil: {available}', { available: availableLabel })
 }
 
 export function aiRateLimitMessage(retryAfter: number | null): string {
@@ -58,7 +59,7 @@ export function aiRateLimitMessage(retryAfter: number | null): string {
   }
 
   const minutes = Math.max(1, Math.ceil(retryAfter / 60))
-  return `Ai atins limita de 10 rețete pe oră. Încearcă din nou în ${minutes} min.`
+  return t('Ai atins limita de 10 rețete pe oră. Încearcă din nou în {minutes} min.', { minutes })
 }
 
 export function mapPantryApiError(error: unknown): string {

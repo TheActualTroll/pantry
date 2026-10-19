@@ -13,6 +13,7 @@ import {
   type CameraErrorReason,
 } from '../../lib/camera'
 import { selectBarcodeScanner } from '../../lib/scanner-backend'
+import { t } from '../../i18n/index'
 
 type BarcodeDetectorInstance = {
   detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue?: string }>>
@@ -272,8 +273,8 @@ export function BarcodeScanner({
 
       <div className="pointer-events-none absolute inset-0 z-[1] flex flex-col items-center justify-center px-8">
         <div className="h-24 w-full max-w-sm rounded-2xl border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]" />
-        <p className="mt-4 text-center text-sm font-medium">Centrează codul de bare în chenar</p>
-        <p className="mt-1 text-center text-sm text-white/80">Ține telefonul la 10–20 cm de cod.</p>
+        <p className="mt-4 text-center text-sm font-medium">{t('Centrează codul de bare în chenar')}</p>
+        <p className="mt-1 text-center text-sm text-white/80">{t('Ține telefonul la 10–20 cm de cod.')}</p>
         {error ? <p className="mt-3 text-center text-sm text-white/90">{cameraErrorMessage(error)}</p> : null}
         {error === 'permission' || error === 'denied' || error === 'in-use' || error === 'failed' ? (
           <button
@@ -284,7 +285,7 @@ export function BarcodeScanner({
               setRetryKey((value) => value + 1)
             }}
           >
-            Încearcă din nou
+            {t('Încearcă din nou')}
           </button>
         ) : null}
       </div>
@@ -296,7 +297,7 @@ export function BarcodeScanner({
           className="pointer-events-auto flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-lg bg-black/70 px-3 text-sm font-medium"
         >
           <X className="size-5" aria-hidden="true" />
-          Închide
+          {t('Închide')}
         </button>
         {torchAvailable ? (
           <button
@@ -306,7 +307,7 @@ export function BarcodeScanner({
             aria-pressed={torchOn}
           >
             <Flashlight className="size-4" aria-hidden="true" />
-            {torchOn ? 'Lanternă pornită' : 'Lanternă'}
+            {torchOn ? t('Lanternă pornită') : t('Lanternă')}
           </button>
         ) : null}
       </div>
@@ -317,7 +318,7 @@ export function BarcodeScanner({
           onClick={onManual}
           className="flex h-touch min-h-touch w-full items-center justify-center rounded-lg bg-white/90 text-sm font-medium text-black"
         >
-          Introdu codul manual
+          {t('Introdu codul manual')}
         </button>
       </div>
     </div>

@@ -5,17 +5,24 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /** Pantry light background: oklch(0.985 0.006 148) */
-const pantryBackground = '#f7fbf8'
+const pantryBackground = '#f4f9f6'
+
+/** `DEPLOY_TARGET=node` builds the plain static client for the Node/Railway server. */
+const nodeTarget = process.env.DEPLOY_TARGET === 'node'
 
 export default defineConfig({
+  build: nodeTarget ? { outDir: 'dist/client', emptyOutDir: true } : undefined,
   plugins: [
     tailwindcss(),
     react(),
     // After the framework plugin, per Cloudflare Vite plugin docs.
-    cloudflare(),
+    ...(nodeTarget ? [] : [cloudflare()]),
     // Restrict PWA generation to the Vite client environment so Workbox
     // artifacts are not emitted into the Worker build output.
     ...VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       // Icons and public assets are picked up once via workbox.globPatterns.
@@ -52,18 +59,9 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        navigateFallback: 'index.html',
-        // Keep /api/* on the network. Do not treat API traffic as app-shell
-        // navigations or offline application data (offline snapshots are Task 10.2).
-        navigateFallbackDenylist: [/^\/api\//],
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
-            handler: 'NetworkOnly',
-          },
-        ],
+      // Push + notification actions live in src/sw.ts. API traffic is never cached.
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
       },
       // Normal Vite HMR stays unencumbered. Opt in with SW_DEV=true to test the SW.
       devOptions: {

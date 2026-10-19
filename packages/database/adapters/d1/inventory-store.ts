@@ -22,7 +22,9 @@ import {
   type InventoryStore,
   type InventorySummary,
   type ProductNutrition,
+  type ProductKind,
   type ProductRecord,
+  type StockLevel,
   type Unit,
 } from '@pantry/core'
 import type { D1DatabaseLike } from './d1-like.js'
@@ -66,6 +68,9 @@ type LotJoinRow = {
   quantity: number | null
   expires_on: string | null
   minimum_quantity: number
+  product_kind: ProductKind
+  stock_level: StockLevel | null
+  stock_level_at: string | null
 }
 
 type ConsumableLotRow = {
@@ -243,6 +248,9 @@ function emptyItem(row: LotJoinRow): InventoryItem {
     lots: [],
     minimumQuantity,
     lowStock: isLowStock(totalQuantity, minimumQuantity),
+    kind: row.product_kind,
+    stockLevel: row.stock_level,
+    stockLevelAt: row.stock_level_at,
   }
 }
 
@@ -378,7 +386,10 @@ export function createD1InventoryStore(db: D1DatabaseLike): InventoryStore {
            loc.name AS location_name,
            l.quantity AS quantity,
            l.expires_on AS expires_on,
-           COALESCE(s.minimum_quantity, 0) AS minimum_quantity
+           COALESCE(s.minimum_quantity, 0) AS minimum_quantity,
+           COALESCE(m.kind, CASE WHEN p.external_catalog = 'open_products_facts' THEN 'household' ELSE 'food' END) AS product_kind,
+           m.stock_level AS stock_level,
+           m.stock_level_at AS stock_level_at
          FROM products p
          INNER JOIN (
            SELECT DISTINCT product_id
@@ -395,6 +406,8 @@ export function createD1InventoryStore(db: D1DatabaseLike): InventoryStore {
            ON loc.id = l.location_id AND loc.household_id = ?1
          LEFT JOIN inventory_settings s
            ON s.household_id = ?1 AND s.product_id = p.id
+         LEFT JOIN household_product_meta m
+           ON m.household_id = ?1 AND m.product_id = p.id
          LEFT JOIN product_nutrition n ON n.product_id = p.id
          LEFT JOIN household_product_images hpi
            ON hpi.household_id = ?1 AND hpi.product_id = p.id

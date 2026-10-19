@@ -1,3 +1,4 @@
+import { t } from '../i18n/index'
 export function canUseWebShare(
   share: unknown = typeof navigator === 'undefined' ? undefined : navigator.share,
 ): boolean {
@@ -14,8 +15,8 @@ export function inviteUrl(origin: string, token: string): string {
 
 export function inviteSharePayload(householdName: string, url: string) {
   return {
-    title: 'Invitație Pantry',
-    text: `Te invit în ${householdName} pe Pantry.`,
+    title: t('Invitație Pantry'),
+    text: t('Te invit în {name} pe Pantry.', { name: householdName }),
     url,
   }
 }

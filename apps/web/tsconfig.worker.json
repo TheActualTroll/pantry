@@ -2,8 +2,8 @@
   "extends": "./tsconfig.node.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
-    "types": ["./worker-configuration.d.ts", "vite/client"]
+    "types": ["./worker-configuration.d.ts", "vite/client", "node"]
   },
-  "include": ["worker"],
-  "exclude": ["worker/**/*.test.ts", "worker/test"]
+  "include": ["worker", "server"],
+  "exclude": ["worker/**/*.test.ts", "worker/test", "server/**/*.test.ts"]
 }

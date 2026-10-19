@@ -8,6 +8,7 @@ import {
   HOUSEHOLD_NAME_INVALID_MESSAGE,
   mapPantryApiError,
 } from '../lib/pantry-api-error'
+import { t } from '../i18n/index'
 
 export function OnboardingPage() {
   const navigate = useNavigate()
@@ -52,7 +53,7 @@ export function OnboardingPage() {
     <div className="min-h-dvh overflow-x-clip bg-background">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
         <header className="flex items-center justify-between">
-          <p className="text-sm font-medium tracking-wide text-accent">Pantry</p>
+          <p className="text-sm font-medium tracking-wide text-accent">{t('Pantry')}</p>
           <AccountMenu />
         </header>
 
@@ -65,17 +66,17 @@ export function OnboardingPage() {
               height={64}
               className="size-16 rounded-xl border border-border bg-surface shadow-surface"
             />
-            <p className="mt-4 text-sm font-medium tracking-wide text-accent">Pantry</p>
-            <h1 className="mt-3 text-2xl font-semibold tracking-tight">Configurează casa</h1>
+            <p className="mt-4 text-sm font-medium tracking-wide text-accent">{t('Pantry')}</p>
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight">{t('Configurează casa')}</h1>
             <p className="mt-2 max-w-xs text-muted">
-              Creează casa în care vei organiza produsele și stocurile.
+              {t('Creează casa în care vei organiza produsele și stocurile.')}
             </p>
           </header>
 
           <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium" htmlFor={nameId}>
-                Numele casei
+                {t('Numele casei')}
               </label>
               <input
                 id={nameId}
@@ -100,7 +101,7 @@ export function OnboardingPage() {
               aria-atomic="true"
               className="min-h-5 text-sm text-destructive"
             >
-              {formError}
+              {formError ? t(formError) : null}
             </div>
 
             <button
@@ -112,7 +113,7 @@ export function OnboardingPage() {
               {isSubmitting ? (
                 <LoaderCircle className="size-5 animate-spin" aria-hidden="true" />
               ) : null}
-              {isSubmitting ? 'Se creează casa...' : 'Creează casa'}
+              {isSubmitting ? t('Se creează casa...') : t('Creează casa')}
             </button>
           </form>
         </section>

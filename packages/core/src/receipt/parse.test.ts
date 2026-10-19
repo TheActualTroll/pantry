@@ -131,3 +131,22 @@ test('low confidence is kept but not used as a required field', () => {
   })
   expect(draft.items[0]?.confidence).toBe(0.12)
 })
+
+test('defaults category to food and drops implausible shelf life', () => {
+  const draft = parseReceiptDraft({
+    merchant: null,
+    date: null,
+    currency: null,
+    total: null,
+    items: [
+      { ...validItem, category: 'nonsense', shelfLifeDays: 9999 },
+      { ...validItem, name: 'Iaurt', category: 'food', shelfLifeDays: 12.4 },
+      { ...validItem, name: 'Detergent', category: 'household', shelfLifeDays: 30 },
+    ],
+  })
+  expect(draft.items.map((item) => [item.category, item.shelfLifeDays])).toEqual([
+    ['food', null],
+    ['food', 12],
+    ['household', null],
+  ])
+})

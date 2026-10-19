@@ -9,7 +9,7 @@ import {
   type HouseholdStore,
   type InventoryStore,
 } from '@pantry/core'
-import { createD1HouseholdStore, createD1InventoryStore } from '@pantry/database/d1'
+import { createD1HouseholdStore, createD1InventoryStore, createD1NotificationStore } from '@pantry/database/d1'
 import { requireAuth } from '../auth/authorize.js'
 import { ensureProfile } from '../profiles/profile.js'
 
@@ -259,6 +259,14 @@ inventory.post('/inventory/stock', async (c) => {
       quantity: body.quantity,
       expiresOn: body.expiresOn,
     })
+    // "Full" for stock checks is the most we have ever had on hand.
+    await createD1NotificationStore(c.env.DB)
+      .bumpFullQuantity({
+        householdId: household.id,
+        productId: item.product.id,
+        quantity: item.totalQuantity,
+      })
+      .catch(() => undefined)
     return c.json({ item })
   } catch (error) {
     if (isDomainError(error)) {

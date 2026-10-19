@@ -1,4 +1,5 @@
 import { LoaderCircle } from 'lucide-react'
+import { t } from '../i18n/index'
 
 export function SessionLoading({ className }: { className?: string }) {
   return (
@@ -8,7 +9,7 @@ export function SessionLoading({ className }: { className?: string }) {
       aria-live="polite"
     >
       <LoaderCircle className="size-6 animate-spin text-accent" aria-hidden="true" />
-      <p className="mt-3 text-sm text-muted">Se încarcă...</p>
+      <p className="mt-3 text-sm text-muted">{t('Se încarcă...')}</p>
     </div>
   )
 }

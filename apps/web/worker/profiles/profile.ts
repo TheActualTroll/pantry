@@ -26,6 +26,24 @@ function toProfile(row: ProfileRow): Profile {
   }
 }
 
+export const SUPPORTED_LOCALES = ['ro', 'en'] as const
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
+
+export function isSupportedLocale(value: unknown): value is SupportedLocale {
+  return typeof value === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(value)
+}
+
+export async function updateProfileLocale(
+  db: D1Database,
+  userId: string,
+  locale: SupportedLocale,
+): Promise<void> {
+  await db
+    .prepare(`UPDATE profiles SET locale = ?1, updated_at = ?2 WHERE id = ?3`)
+    .bind(locale, new Date().toISOString(), userId)
+    .run()
+}
+
 /**
  * Idempotent profile guarantee for a Better Auth user already resolved server-side.
  * Never call this with a client-supplied user id.

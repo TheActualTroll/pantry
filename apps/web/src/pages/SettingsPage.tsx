@@ -2,6 +2,8 @@ import { validateHouseholdName, validateLocationName, type LocationRecord } from
 import { LoaderCircle } from 'lucide-react'
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
+import { LanguageSwitch } from '../components/LanguageSwitch'
+import { NotificationSettings } from '../components/settings/NotificationSettings'
 import { useHousehold } from '../household/HouseholdProvider'
 import {
   HOUSEHOLD_NAME_INVALID_MESSAGE,
@@ -9,6 +11,7 @@ import {
   mapPantryApiError,
 } from '../lib/pantry-api-error'
 import { createLocation, deactivateLocation, renameHousehold, renameLocation } from '../lib/pantry-api'
+import { t } from '../i18n/index'
 
 const fieldClassName =
   'mt-1.5 h-touch min-h-touch w-full rounded-lg border border-border bg-surface px-3 text-text shadow-surface'
@@ -19,10 +22,10 @@ export function SettingsPage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold tracking-tight">Setări</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t('Setări')}</h1>
 
       <section className="mt-6">
-        <h2 className="text-lg font-semibold tracking-tight">Casa</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t('Casa')}</h2>
         {household ? (
           <HouseholdNameForm
             name={household.name}
@@ -33,17 +36,33 @@ export function SettingsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold tracking-tight">Locații</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t('Locații')}</h2>
         <LocationSettings locations={locations} onChanged={reload} />
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold tracking-tight">Cont / acces</h2>
+        <h2 className="text-lg font-semibold tracking-tight">{t('Notificări')}</h2>
+        <p className="mt-1 text-sm text-muted">
+          {t('Alerte pentru produse care expiră, stoc scăzut și verificări pentru produsele de casă.')}
+        </p>
+        <NotificationSettings />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold tracking-tight">{t('Limbă')}</h2>
+        <p className="mt-1 text-sm text-muted">{t('Alege limba aplicației.')}</p>
+        <div className="mt-3">
+          <LanguageSwitch persistToProfile />
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold tracking-tight">{t('Cont / acces')}</h2>
         <Link
           to="/household"
           className="mt-3 flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
         >
-          Membri și acces
+          {t('Membri și acces')}
         </Link>
       </section>
     </section>
@@ -94,7 +113,7 @@ function HouseholdNameForm({
   return (
     <form className="mt-3" onSubmit={(event) => void handleSubmit(event)}>
       <label className="text-sm font-medium" htmlFor={nameId}>
-        Numele casei
+        {t('Numele casei')}
       </label>
       <input
         id={nameId}
@@ -103,9 +122,9 @@ function HouseholdNameForm({
         disabled={!canEdit || busy}
         className={fieldClassName}
       />
-      {!canEdit ? <p className="mt-1 text-sm text-muted">Doar proprietarul poate redenumi casa.</p> : null}
+      {!canEdit ? <p className="mt-1 text-sm text-muted">{t('Doar proprietarul poate redenumi casa.')}</p> : null}
       <div role="alert" className="min-h-5 text-sm text-destructive">
-        {error}
+        {error ? t(error) : null}
       </div>
       {canEdit ? (
         <button
@@ -114,7 +133,7 @@ function HouseholdNameForm({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          Salvează
+          {t('Salvează')}
         </button>
       ) : null}
     </form>
@@ -208,14 +227,14 @@ function LocationSettings({
                     className="flex h-touch min-h-touch flex-1 items-center justify-center rounded-lg bg-accent px-3 text-sm font-medium text-accent-foreground"
                     onClick={() => void handleRename(location)}
                   >
-                    Salvează
+                    {t('Salvează')}
                   </button>
                   <button
                     type="button"
                     className="flex h-touch min-h-touch flex-1 items-center justify-center rounded-lg border border-border px-3 text-sm"
                     onClick={() => setEditingId(null)}
                   >
-                    Anulează
+                    {t('Anulează')}
                   </button>
                 </div>
               </div>
@@ -231,14 +250,14 @@ function LocationSettings({
                       setEditingName(location.name)
                     }}
                   >
-                    Redenumește
+                    {t('Redenumește')}
                   </button>
                   <button
                     type="button"
                     className="text-sm font-medium text-destructive"
                     onClick={() => void handleDeactivate(location)}
                   >
-                    Elimină
+                    {t('Elimină')}
                   </button>
                 </div>
               </div>
@@ -248,25 +267,25 @@ function LocationSettings({
       </ul>
       <form className="mt-4" onSubmit={(event) => void handleAdd(event)}>
         <label className="text-sm font-medium" htmlFor={addId}>
-          Locație nouă
+          {t('Locație nouă')}
         </label>
         <input
           id={addId}
           value={addName}
           onChange={(event) => setAddName(event.target.value)}
           className={fieldClassName}
-          placeholder="Beci"
+          placeholder={t('Beci')}
         />
         <button
           type="submit"
           disabled={busyId === 'add'}
           className="mt-3 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
         >
-          Adaugă locație
+          {t('Adaugă locație')}
         </button>
       </form>
       <div role="alert" className="mt-2 min-h-5 text-sm text-destructive">
-        {error}
+        {error ? t(error) : null}
       </div>
     </div>
   )

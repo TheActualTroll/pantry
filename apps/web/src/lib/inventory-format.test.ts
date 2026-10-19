@@ -76,6 +76,9 @@ function item(overrides: Partial<InventoryItem> & Pick<InventoryItem, 'product'>
     lots: [],
     minimumQuantity: 0,
     lowStock: false,
+    kind: 'food',
+    stockLevel: null,
+    stockLevelAt: null,
     ...overrides,
   }
 }

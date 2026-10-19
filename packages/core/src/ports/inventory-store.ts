@@ -2,6 +2,7 @@ import type { ExternalCatalogId } from './external-product-catalog.js'
 import type { ProductNutrition } from '../product/nutrition.js'
 import type { Unit } from '../product/units.js'
 import type { ConsumableLot, ConsumptionPlanResult } from '../inventory/consumption.js'
+import type { ProductKind, StockLevel } from '../notification/stock-level.js'
 
 export type InventoryLotRecord = {
   id: string
@@ -35,6 +36,10 @@ export type InventoryItem = {
   lots: InventoryLotRecord[]
   minimumQuantity: number
   lowStock: boolean
+  /** Household goods get none / half / all stock checks; food does not. */
+  kind: ProductKind
+  stockLevel: StockLevel | null
+  stockLevelAt: string | null
 }
 
 export type InventoryHistoryAction = 'add' | 'consume' | 'adjust' | 'move' | 'edit'

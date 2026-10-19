@@ -18,6 +18,7 @@ import {
   getLocations,
   setActiveHousehold,
 } from '../lib/pantry-api'
+import { intlLocale, t } from '../i18n/index'
 
 type HouseholdStatus = 'loading' | 'ready' | 'error'
 
@@ -80,7 +81,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
         }
 
         setStatus('error')
-        setError('Nu am putut încărca casa.')
+        setError(t('Nu am putut încărca casa.'))
       }
     }
 
@@ -106,7 +107,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
           if (left.sortOrder !== right.sortOrder) {
             return left.sortOrder - right.sortOrder
           }
-          return left.name.localeCompare(right.name, 'ro')
+          return left.name.localeCompare(right.name, intlLocale())
         }),
       )
     },

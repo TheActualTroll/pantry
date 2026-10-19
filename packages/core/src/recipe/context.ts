@@ -3,7 +3,7 @@ import type { InventoryProductContext } from './types.js'
 
 export function buildInventoryContext(items: readonly InventoryItem[]): InventoryProductContext[] {
   return items
-    .filter((item) => item.totalQuantity > 0)
+    .filter((item) => item.totalQuantity > 0 && item.kind === 'food')
     .map((item) => {
       const nutrition = item.product.nutrition
       const hasPer100g =

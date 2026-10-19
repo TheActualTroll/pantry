@@ -36,6 +36,10 @@ export const DOMAIN_ERROR_CODES = [
   'RECEIPT_EXTRACTION_FAILED',
   'PRODUCT_IMAGE_INVALID',
   'PRODUCT_IMAGE_TOO_LARGE',
+  'INVALID_STOCK_LEVEL',
+  'INVALID_PRODUCT_KIND',
+  'INVALID_PUSH_SUBSCRIPTION',
+  'INVALID_PREFERENCES',
 ] as const
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number]
@@ -79,6 +83,10 @@ export function httpStatusForDomainError(
     case 'RECEIPT_IMAGE_TOO_LARGE':
     case 'PRODUCT_IMAGE_INVALID':
     case 'PRODUCT_IMAGE_TOO_LARGE':
+    case 'INVALID_STOCK_LEVEL':
+    case 'INVALID_PRODUCT_KIND':
+    case 'INVALID_PUSH_SUBSCRIPTION':
+    case 'INVALID_PREFERENCES':
       return 400
     case 'FORBIDDEN':
       return 403

@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "build:node": "tsc -b && DEPLOY_TARGET=node vite build && node scripts/build-server.mjs",
+    "start": "node --disable-warning=ExperimentalWarning dist/server/index.mjs",
+    "vapid": "web-push generate-vapid-keys",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "db:migrate:local": "wrangler d1 migrations apply pantry --local",
@@ -15,6 +18,8 @@
     "db:migrations:list:remote": "wrangler d1 migrations list pantry --remote"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@hono/node-server": "^2.1.5",
     "@pantry/core": "workspace:*",
     "@pantry/database": "workspace:*",
     "@pantry/shared": "workspace:*",
@@ -25,7 +30,11 @@
     "lucide-react": "^1.41.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router": "^8.3.1"
+    "react-router": "^8.3.1",
+    "web-push": "^3.6.7",
+    "workbox-core": "^7.4.1",
+    "workbox-precaching": "^7.4.1",
+    "workbox-routing": "^7.4.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.54.4",
@@ -33,7 +42,9 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.2",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",

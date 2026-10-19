@@ -5,6 +5,7 @@ import { SessionLoading } from '../components/SessionLoading'
 import { authClient } from '../lib/auth-client'
 import { readReturnTo, resolvePostLoginPath } from '../lib/auth-redirect'
 import { mapLoginError } from '../lib/login-error'
+import { t } from '../i18n/index'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -73,15 +74,15 @@ export function LoginPage() {
           height={64}
           className="size-16 rounded-xl border border-border bg-surface shadow-surface"
         />
-        <p className="mt-4 text-sm font-medium tracking-wide text-accent">Pantry</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight">Conectează-te</h1>
-        <p className="mt-2 max-w-xs text-muted">Accesează inventarul casei tale.</p>
+        <p className="mt-4 text-sm font-medium tracking-wide text-accent">{t('Pantry')}</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">{t('Conectează-te')}</h1>
+        <p className="mt-2 max-w-xs text-muted">{t('Accesează inventarul casei tale.')}</p>
       </header>
 
       <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" htmlFor={emailId}>
-            Email
+            {t('Email')}
           </label>
           <input
             id={emailId}
@@ -96,13 +97,13 @@ export function LoginPage() {
             aria-invalid={formError ? true : undefined}
             aria-describedby={describedBy}
             className="h-touch min-h-touch w-full rounded-lg border border-border bg-surface-elevated px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60"
-            placeholder="nume@email.com"
+            placeholder={t('nume@email.com')}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" htmlFor={passwordId}>
-            Parolă
+            {t('Parolă')}
           </label>
           <div className="relative">
             <input
@@ -121,7 +122,7 @@ export function LoginPage() {
             <button
               type="button"
               className="absolute inset-y-0 right-0 flex min-h-touch min-w-touch items-center justify-center text-muted disabled:opacity-60"
-              aria-label={passwordVisible ? 'Ascunde parola' : 'Afișează parola'}
+              aria-label={passwordVisible ? t('Ascunde parola') : t('Afișează parola')}
               aria-pressed={passwordVisible}
               disabled={isSubmitting}
               onClick={() => setPasswordVisible((visible) => !visible)}
@@ -142,7 +143,7 @@ export function LoginPage() {
           aria-atomic="true"
           className="min-h-5 text-sm text-destructive"
         >
-          {formError}
+          {formError ? t(formError) : null}
         </div>
 
         <button
@@ -154,14 +155,14 @@ export function LoginPage() {
           {isSubmitting ? (
             <LoaderCircle className="size-5 animate-spin" aria-hidden="true" />
           ) : null}
-          {isSubmitting ? 'Se conectează...' : 'Conectează-te'}
+          {isSubmitting ? t('Se conectează...') : t('Conectează-te')}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">
-        Nu ai cont?{' '}
+        {t('Nu ai cont?')}{' '}
         <Link to="/register" state={location.state} className="font-medium text-accent">
-          Creează unul
+          {t('Creează unul')}
         </Link>
       </p>
     </section>

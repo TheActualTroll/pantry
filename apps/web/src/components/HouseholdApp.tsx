@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { HouseholdProvider, useHousehold } from '../household/HouseholdProvider'
 import { SessionLoading } from './SessionLoading'
+import { t } from '../i18n/index'
 
 function HouseholdGate() {
   const location = useLocation()
@@ -15,7 +16,7 @@ function HouseholdGate() {
   if (status === 'error') {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
-        <p className="text-sm text-destructive">Nu am putut încărca casa.</p>
+        <p className="text-sm text-destructive">{t('Nu am putut încărca casa.')}</p>
       </div>
     )
   }

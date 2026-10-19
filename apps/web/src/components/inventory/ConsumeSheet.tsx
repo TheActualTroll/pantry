@@ -11,6 +11,7 @@ import { formatQuantity, unitLabel } from '../../lib/inventory-format'
 import { QUANTITY_INVALID_MESSAGE, insufficientStockMessage, mapPantryApiError } from '../../lib/pantry-api-error'
 import { consumeStock } from '../../lib/pantry-api'
 import { InventorySheet } from './InventorySheet'
+import { t } from '../../i18n/index'
 
 const fieldClassName =
   'mt-1.5 h-touch min-h-touch w-full rounded-lg border border-border bg-surface px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60'
@@ -74,13 +75,13 @@ export function ConsumeSheet({
   }
 
   return (
-    <InventorySheet title="Cât ai consumat?" onClose={onClose}>
+    <InventorySheet title={t('Cât ai consumat?')} onClose={onClose}>
       <p className="text-sm font-medium">{item.product.name}</p>
-      <p className="mt-1 text-sm text-muted">Disponibil: {formatQuantity(item.totalQuantity, unit)}</p>
+      <p className="mt-1 text-sm text-muted">{t('Disponibil:')}{' '}{formatQuantity(item.totalQuantity, unit)}</p>
 
       {confirmAll ? (
         <div className="mt-4">
-          <p className="text-sm">Vei consuma tot stocul disponibil pentru acest produs.</p>
+          <p className="text-sm">{t('Vei consuma tot stocul disponibil pentru acest produs.')}</p>
           <div className="mt-4 flex flex-col gap-2">
             <button
               type="button"
@@ -89,7 +90,7 @@ export function ConsumeSheet({
               onClick={() => void submit(item.totalQuantity)}
             >
               {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-              Consumă tot
+              {t('Consumă tot')}
             </button>
             <button
               type="button"
@@ -97,7 +98,7 @@ export function ConsumeSheet({
               className="flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
               onClick={() => setConfirmAll(false)}
             >
-              Anulează
+              {t('Anulează')}
             </button>
           </div>
         </div>
@@ -126,7 +127,7 @@ export function ConsumeSheet({
               className="flex min-h-touch flex-col items-center justify-center rounded-xl border border-border px-3 py-3 text-sm font-medium disabled:opacity-60"
               onClick={() => setConfirmAll(true)}
             >
-              <span>Tot</span>
+              <span>{t('Tot')}</span>
               <span className="mt-1 text-xs font-normal text-muted">
                 {formatQuantity(item.totalQuantity, unit)}
               </span>
@@ -138,14 +139,14 @@ export function ConsumeSheet({
             className="mt-4 w-full text-sm font-medium text-accent"
             onClick={() => setExactOpen((current) => !current)}
           >
-            Cantitate exactă
+            {t('Cantitate exactă')}
           </button>
 
           {exactOpen ? (
             <form className="mt-3 flex flex-col gap-3" onSubmit={(event) => void handleExact(event)}>
               <div>
                 <label className="text-sm font-medium" htmlFor={quantityId}>
-                  Cantitate
+                  {t('Cantitate')}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -167,7 +168,7 @@ export function ConsumeSheet({
                 className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
               >
                 {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-                Consumă
+                {t('Consumă')}
               </button>
             </form>
           ) : null}
@@ -175,7 +176,7 @@ export function ConsumeSheet({
       )}
 
       <div role="alert" aria-live="assertive" className="mt-3 min-h-5 text-sm text-destructive">
-        {formError}
+        {formError ? t(formError) : null}
       </div>
     </InventorySheet>
   )

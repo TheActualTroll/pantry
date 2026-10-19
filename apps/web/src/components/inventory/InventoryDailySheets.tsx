@@ -28,6 +28,7 @@ import {
   setMinimumQuantity,
   updateProduct,
 } from '../../lib/pantry-api'
+import { t } from '../../i18n/index'
 
 const UNIT_OPTIONS: Array<{ value: Unit; label: string }> = [
   { value: 'g', label: 'g' },
@@ -80,11 +81,11 @@ export function MinimumStockSheet({
   }
 
   return (
-    <InventorySheet title={`Stoc minim · ${item.product.name}`} onClose={onClose}>
+    <InventorySheet title={t('Stoc minim · {name}', { name: item.product.name })} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Stoc minim
+            {t('Stoc minim')}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -98,10 +99,10 @@ export function MinimumStockSheet({
             />
             <span className="mt-1.5 shrink-0 text-sm text-muted">{unitLabel(item.product.unit)}</span>
           </div>
-          <p className="mt-1 text-sm text-muted">0 dezactivează pragul.</p>
+          <p className="mt-1 text-sm text-muted">{t('0 dezactivează pragul.')}</p>
         </div>
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -109,7 +110,7 @@ export function MinimumStockSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Salvează'}
+          {isSubmitting ? t('Se salvează...') : t('Salvează')}
         </button>
       </form>
     </InventorySheet>
@@ -163,17 +164,17 @@ export function EditProductSheet({
   }
 
   return (
-    <InventorySheet title="Editează produsul" onClose={onClose}>
+    <InventorySheet title={t('Editează produsul')} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={nameId}>
-            Produs
+            {t('Produs')}
           </label>
           <input id={nameId} value={name} onChange={(event) => setName(event.target.value)} className={fieldClassName} />
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={brandId}>
-            Brand
+            {t('Brand')}
           </label>
           <input
             id={brandId}
@@ -183,12 +184,12 @@ export function EditProductSheet({
           />
         </div>
         <div>
-          <p className="text-sm font-medium">Unitate</p>
+          <p className="text-sm font-medium">{t('Unitate')}</p>
           <p className="mt-1.5 text-sm text-muted">{unitLabel(item.product.unit)}</p>
-          {unitLocked ? <p className="mt-1 text-sm text-muted">Unitatea nu mai poate fi schimbată.</p> : null}
+          {unitLocked ? <p className="mt-1 text-sm text-muted">{t('Unitatea nu mai poate fi schimbată.')}</p> : null}
         </div>
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -196,7 +197,7 @@ export function EditProductSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Salvează'}
+          {isSubmitting ? t('Se salvează...') : t('Salvează')}
         </button>
       </form>
     </InventorySheet>
@@ -231,7 +232,7 @@ export function CorrectUnitSheet({
     try {
       nextUnit = validateProductUnit(unit)
     } catch {
-      setFormError('Alege o unitate validă.')
+      setFormError(t('Alege o unitate validă.'))
       return
     }
 
@@ -260,15 +261,14 @@ export function CorrectUnitSheet({
   }
 
   return (
-    <InventorySheet title="Corectează unitatea" onClose={onClose}>
+    <InventorySheet title={t('Corectează unitatea')} onClose={onClose}>
       <p className="mb-3 text-sm text-muted">
-        Corecția rămâne doar pentru casa ta. Produsul din catalog nu se schimbă. Introdu cantitatea corectă
-        pentru fiecare lot — Pantry nu convertește {unitLabel(item.product.unit)} în {unitLabel(unit)}.
+        {t('Corecția rămâne doar pentru casa ta. Produsul din catalog nu se schimbă. Introdu cantitatea corectă pentru fiecare lot — Pantry nu convertește')}{' '}{unitLabel(item.product.unit)}{' '}{t('în')}{' '}{unitLabel(unit)}.
       </p>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={unitId}>
-            Unitate nouă
+            {t('Unitate nouă')}
           </label>
           <select
             id={unitId}
@@ -288,7 +288,7 @@ export function CorrectUnitSheet({
           <div key={lot.id}>
             <label className="text-sm font-medium" htmlFor={`override-${lot.id}`}>
               {formatQuantity(lot.quantity, item.product.unit)} · {lot.locationName}
-              {lot.expiresOn ? ` · ${lot.expiresOn}` : ' · fără expirare'}
+              {lot.expiresOn ? ` · ${lot.expiresOn}` : t(' · fără expirare')}
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -308,7 +308,7 @@ export function CorrectUnitSheet({
           </div>
         ))}
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -316,7 +316,7 @@ export function CorrectUnitSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Corectează pentru casa mea'}
+          {isSubmitting ? t('Se salvează...') : t('Corectează pentru casa mea')}
         </button>
       </form>
     </InventorySheet>
@@ -356,14 +356,14 @@ export function HistorySheet({
   }, [productId])
 
   return (
-    <InventorySheet title={productName ? `Istoric · ${productName}` : 'Istoric'} onClose={onClose}>
+    <InventorySheet title={productName ? t('Istoric · {name}', { name: productName }) : t('Istoric')} onClose={onClose}>
       {entries == null && !error ? (
         <div className="flex justify-center py-6 text-muted">
-          <LoaderCircle className="size-5 animate-spin" aria-label="Se încarcă istoricul" />
+          <LoaderCircle className="size-5 animate-spin" aria-label={t('Se încarcă istoricul')} />
         </div>
       ) : null}
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      {entries && entries.length === 0 ? <p className="text-sm text-muted">Nu există mișcări recente.</p> : null}
+      {error ? <p className="text-sm text-destructive">{error ? t(error) : null}</p> : null}
+      {entries && entries.length === 0 ? <p className="text-sm text-muted">{t('Nu există mișcări recente.')}</p> : null}
       {entries && entries.length > 0 ? (
         <ul className="space-y-3">
           {entries.map((entry) => (

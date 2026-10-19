@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { useHousehold } from '../household/HouseholdProvider'
 import { authClient } from '../lib/auth-client'
 import { mapPantryApiError } from '../lib/pantry-api-error'
+import { t } from '../i18n/index'
 
 export function AccountMenu() {
   const navigate = useNavigate()
@@ -75,7 +76,7 @@ export function AccountMenu() {
       <button
         type="button"
         className="flex min-h-touch min-w-touch items-center justify-center rounded-lg text-muted"
-        aria-label="Cont"
+        aria-label={t('Cont')}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={panelId}
@@ -89,7 +90,7 @@ export function AccountMenu() {
           id={panelId}
           ref={panelRef}
           role="dialog"
-          aria-label="Cont"
+          aria-label={t('Cont')}
           tabIndex={-1}
           className="absolute top-[calc(100%-0.25rem)] right-0 z-20 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface-elevated p-3 shadow-elevated"
         >
@@ -100,7 +101,7 @@ export function AccountMenu() {
           ) : null}
           {households.length > 1 ? (
             <div className="mt-3">
-              <p className="text-xs font-medium tracking-wide text-muted uppercase">Casa activă</p>
+              <p className="text-xs font-medium tracking-wide text-muted uppercase">{t('Casa activă')}</p>
               <div className="mt-1.5 flex flex-col gap-1">
                 {households.map((item) => (
                   <button
@@ -130,7 +131,7 @@ export function AccountMenu() {
                   </button>
                 ))}
               </div>
-              {switchError ? <p className="mt-1 text-sm text-destructive">{switchError}</p> : null}
+              {switchError ? <p className="mt-1 text-sm text-destructive">{switchError ? t(switchError) : null}</p> : null}
             </div>
           ) : null}
           {household ? (
@@ -145,7 +146,7 @@ export function AccountMenu() {
                 }}
               >
                 <Settings className="size-4" aria-hidden="true" />
-                Setări
+                {t('Setări')}
               </button>
               <button
                 type="button"
@@ -157,7 +158,7 @@ export function AccountMenu() {
                 }}
               >
                 <Users className="size-4" aria-hidden="true" />
-                Membri și acces
+                {t('Membri și acces')}
               </button>
             </>
           ) : null}
@@ -175,7 +176,7 @@ export function AccountMenu() {
             ) : (
               <LogOut className="size-4" aria-hidden="true" />
             )}
-            Deconectează-te
+            {t('Deconectează-te')}
           </button>
         </div>
       ) : null}

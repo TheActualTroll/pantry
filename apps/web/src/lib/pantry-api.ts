@@ -487,6 +487,8 @@ export type ReceiptDraftLineView = {
   } | null
   suggestedQuantity: number | null
   suggestedUnit: Unit | null
+  category: 'food' | 'household'
+  shelfLifeDays: number | null
 }
 
 export type ReceiptExtractResponse = {
@@ -511,4 +513,93 @@ export function getInvitePreview(token: string) {
 
 export function acceptInvite(token: string) {
   return apiSend<AcceptInviteResponse>(`/api/v1/invites/${encodeURIComponent(token)}/accept`, 'POST', {})
+}
+
+export type ProfileResponse = {
+  id: string
+  displayName: string
+  avatarUrl: string | null
+  locale: string
+}
+
+export function getProfile() {
+  return apiGet<ProfileResponse>('/api/v1/profile')
+}
+
+export function updateProfileLocale(locale: 'ro' | 'en') {
+  return apiSend<{ locale: string }>('/api/v1/profile', 'PATCH', { locale })
+}
+
+export type StockLevel = 'none' | 'half' | 'full'
+export type ProductKind = 'food' | 'household'
+
+export type NotificationPreferencesView = {
+  expiryEnabled: boolean
+  lowStockEnabled: boolean
+  stockChecksEnabled: boolean
+  expiryLeadDays: number
+  notifyHour: number
+  timezone: string
+}
+
+export type NotificationConfigResponse = {
+  supported: boolean
+  vapidPublicKey: string | null
+  preferences: NotificationPreferencesView
+  subscriptionCount: number
+  endpoints: string[]
+}
+
+export function getNotificationConfig() {
+  return apiGet<NotificationConfigResponse>('/api/v1/notifications')
+}
+
+export function updateNotificationPreferences(patch: Partial<NotificationPreferencesView>) {
+  return apiSend<{ preferences: NotificationPreferencesView }>('/api/v1/notifications/preferences', 'PUT', patch)
+}
+
+export function subscribePush(input: {
+  endpoint: string
+  keys: { p256dh: string; auth: string }
+  timezone: string
+}) {
+  return apiSend<{ ok: true }>('/api/v1/notifications/subscriptions', 'POST', input)
+}
+
+export function unsubscribePush(endpoint: string) {
+  return apiSend<{ ok: true }>('/api/v1/notifications/unsubscribe', 'POST', { endpoint })
+}
+
+export function sendTestNotification() {
+  return apiSend<{ delivered: number; attempted: number }>('/api/v1/notifications/test', 'POST', {})
+}
+
+export type StockCheckDueItem = {
+  householdId: string
+  productId: string
+  productName: string
+  unit: Unit
+  totalQuantity: number
+  stockLevel: StockLevel | null
+  stockLevelAt: string | null
+}
+
+export function getStockChecks() {
+  return apiGet<{ householdId: string; items: StockCheckDueItem[] }>('/api/v1/stock-checks')
+}
+
+export function respondStockCheck(productId: string, level: StockLevel) {
+  return apiSend<{ level: StockLevel; totalQuantity: number; addedToShopping: boolean }>(
+    `/api/v1/stock-checks/${encodeURIComponent(productId)}/respond`,
+    'POST',
+    { level },
+  )
+}
+
+export function setProductKind(productId: string, kind: ProductKind) {
+  return apiSend<{ productId: string; kind: ProductKind }>(
+    `/api/v1/products/${encodeURIComponent(productId)}/kind`,
+    'PUT',
+    { kind },
+  )
 }

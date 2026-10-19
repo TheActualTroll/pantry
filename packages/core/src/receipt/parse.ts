@@ -1,9 +1,12 @@
 import { DomainError } from '../errors.js'
 import { isUnit, type Unit } from '../product/units.js'
 import {
+  RECEIPT_CATEGORIES,
   RECEIPT_MAX_ITEMS,
+  RECEIPT_MAX_SHELF_LIFE_DAYS,
   RECEIPT_WEIGHT_UNITS,
   type ReceiptDraft,
+  type ReceiptCategory,
   type ReceiptDraftItem,
   type ReceiptWeightUnit,
 } from './types.js'
@@ -65,6 +68,23 @@ function optionalConfidence(value: unknown): number | null {
   return number
 }
 
+function category(value: unknown): ReceiptCategory {
+  return typeof value === 'string' && (RECEIPT_CATEGORIES as readonly string[]).includes(value)
+    ? (value as ReceiptCategory)
+    : 'food'
+}
+
+function shelfLife(value: unknown, itemCategory: ReceiptCategory): number | null {
+  if (itemCategory === 'household') {
+    return null
+  }
+  const number = optionalPositiveNumber(value)
+  if (number == null || number > RECEIPT_MAX_SHELF_LIFE_DAYS) {
+    return null
+  }
+  return Math.round(number)
+}
+
 function optionalIsoDate(value: unknown): string | null {
   const text = optionalTrimmedString(value, 16)
   if (!text || !/^\d{4}-\d{2}-\d{2}$/.test(text)) {
@@ -84,6 +104,8 @@ function parseItem(value: unknown): ReceiptDraftItem | null {
     return null
   }
 
+  const itemCategory = category(value.category)
+
   return {
     rawName: rawName ?? name,
     name,
@@ -93,6 +115,8 @@ function parseItem(value: unknown): ReceiptDraftItem | null {
     weightValue: optionalPositiveNumber(value.weightValue),
     weightUnit: optionalWeightUnit(value.weightUnit),
     confidence: optionalConfidence(value.confidence),
+    category: itemCategory,
+    shelfLifeDays: shelfLife(value.shelfLifeDays, itemCategory),
   }
 }
 

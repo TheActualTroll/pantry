@@ -1,5 +1,7 @@
 import type { InventoryItem } from '@pantry/core'
-import { AlertTriangle, MoreHorizontal, Plus } from 'lucide-react'
+import { AlertTriangle, MoreHorizontal, Plus, SprayCan } from 'lucide-react'
+import { StockLevelButtons } from '../StockLevelButtons'
+import type { StockLevel } from '../../lib/pantry-api'
 import { ProductImage } from '../scan/ProductImage'
 import {
   formatExpiryBadge,
@@ -8,6 +10,7 @@ import {
   formatQuantity,
 } from '../../lib/inventory-format'
 import { productDisplayImageUrl, productHasVisibleImage } from '../../lib/product-image'
+import { t } from '../../i18n/index'
 
 export function InventoryProductCard({
   item,
@@ -25,6 +28,8 @@ export function InventoryProductCard({
   onLots,
   onHistory,
   onChangeImage,
+  onStockLevel,
+  onToggleKind,
 }: {
   item: InventoryItem
   today: string
@@ -41,6 +46,8 @@ export function InventoryProductCard({
   onLots: () => void
   onHistory: () => void
   onChangeImage: () => void
+  onStockLevel?: (level: StockLevel) => void
+  onToggleKind?: () => void
 }) {
   const nearestBadge = item.nearestExpiry ? formatExpiryBadge(item.nearestExpiry, today) : null
   const nutrition = item.product.nutrition
@@ -50,7 +57,7 @@ export function InventoryProductCard({
   const countUnit = item.product.unit === 'each' || item.product.unit === 'package'
   const hasImage = productHasVisibleImage(item.product)
   const imageUrl = productDisplayImageUrl(item.product)
-  const imageActionLabel = hasImage ? 'Schimbă poza' : 'Adaugă poză'
+  const imageActionLabel = hasImage ? t('Schimbă poza') : t('Adaugă poză')
 
   return (
     <article className="rounded-2xl border border-border bg-surface-elevated p-4 shadow-surface">
@@ -73,9 +80,17 @@ export function InventoryProductCard({
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight">{item.product.name}</h2>
             {item.product.brand ? <p className="mt-0.5 text-sm text-muted">{item.product.brand}</p> : null}
+            {item.kind === 'household' ? (
+              <span className="pill mt-1.5" data-tone="success">
+                <SprayCan className="size-3.5" aria-hidden="true" />
+                {t('Produs de casă')}
+              </span>
+            ) : null}
           </div>
         </div>
-        <p className="shrink-0 text-base font-medium">{formatQuantity(item.totalQuantity, item.product.unit)}</p>
+        <p className="shrink-0 rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent tabular-nums">
+          {formatQuantity(item.totalQuantity, item.product.unit)}
+        </p>
       </div>
 
       {kcal != null ? (
@@ -85,38 +100,40 @@ export function InventoryProductCard({
         </p>
       ) : null}
 
-      {nearestBadge && nearestBadge.status !== 'later' ? (
-        <p
-          className={`mt-2 flex items-center gap-1.5 text-sm ${
-            nearestBadge.tone === 'danger'
-              ? 'font-medium text-destructive'
-              : nearestBadge.tone === 'warning'
-                ? 'font-medium text-warning'
-                : 'text-muted'
-          }`}
-        >
-          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-          {nearestBadge.label}
-        </p>
+      {(nearestBadge && nearestBadge.status !== 'later') || item.lowStock ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {nearestBadge && nearestBadge.status !== 'later' ? (
+            <span className="pill" data-tone={nearestBadge.tone}>
+              <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
+              {nearestBadge.label}
+            </span>
+          ) : null}
+          {item.lowStock ? (
+            <span className="pill" data-tone="warning">
+              <AlertTriangle className="size-3.5 shrink-0" aria-hidden="true" />
+              {t('Stoc scăzut')}
+            </span>
+          ) : null}
+        </div>
       ) : nearestBadge ? (
-        <p className="mt-2 text-sm text-muted">Expiră pe {nearestBadge.label}</p>
-      ) : null}
-
-      {item.lowStock ? (
-        <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-warning">
-          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-          Stoc scăzut
-        </p>
+        <p className="mt-2 text-sm text-muted">{t('Expiră pe')}{' '}{nearestBadge.label}</p>
       ) : null}
 
       {item.lowStock ? (
         <p className="mt-1 text-sm text-muted">
-          {formatQuantity(item.totalQuantity, item.product.unit)} disponibili · minim{' '}
+          {formatQuantity(item.totalQuantity, item.product.unit)}{' '}{t('disponibili · minim')}{' '}
           {formatQuantity(item.minimumQuantity, item.product.unit)}
         </p>
       ) : null}
 
       {locationSummary ? <p className="mt-2 text-sm text-muted">{locationSummary}</p> : null}
+
+      {item.kind === 'household' && onStockLevel ? (
+        <div className="mt-3">
+          <p className="mb-1.5 text-xs font-medium text-muted">{t('Cât a mai rămas?')}</p>
+          <StockLevelButtons current={item.stockLevel} disabled={busy} onPick={onStockLevel} />
+        </div>
+      ) : null}
 
       {item.lots.length > 1 ? (
         <button
@@ -124,8 +141,10 @@ export function InventoryProductCard({
           className="mt-2 text-sm font-medium text-accent"
           onClick={onLots}
         >
-          {item.lots.length} loturi
-          {nearestBadge ? ` · ${nearestBadge.status === 'later' ? `Expiră ${nearestBadge.label}` : nearestBadge.label}` : ''}
+          {item.lots.length}{' '}{t('loturi')}
+          {nearestBadge
+            ? ` · ${nearestBadge.status === 'later' ? t('Expiră {date}', { date: nearestBadge.label }) : nearestBadge.label}`
+            : ''}
         </button>
       ) : null}
 
@@ -135,7 +154,7 @@ export function InventoryProductCard({
           disabled={busy}
           className="flex h-touch min-h-touch min-w-touch items-center justify-center rounded-lg border border-border px-3 text-sm font-medium disabled:opacity-60"
           onClick={onQuickAdd}
-          aria-label="Adaugă stoc"
+          aria-label={t('Adaugă stoc')}
         >
           <Plus className="size-4" aria-hidden="true" />
         </button>
@@ -145,12 +164,12 @@ export function InventoryProductCard({
           className="flex h-touch min-h-touch flex-1 items-center justify-center rounded-lg bg-accent px-3 text-sm font-medium text-accent-foreground disabled:opacity-60"
           onClick={onConsume}
         >
-          Consumă
+          {t('Consumă')}
         </button>
         <details className="relative">
           <summary
             className="flex h-touch min-h-touch min-w-touch list-none items-center justify-center rounded-lg border border-border px-3 text-sm font-medium [&::-webkit-details-marker]:hidden"
-            aria-label="Mai multe acțiuni"
+            aria-label={t('Mai multe acțiuni')}
           >
             <MoreHorizontal className="size-4" aria-hidden="true" />
           </summary>
@@ -161,21 +180,26 @@ export function InventoryProductCard({
             <OverflowItem onClick={onChangeImage}>{imageActionLabel}</OverflowItem>
             {item.lowStock ? (
               <OverflowItem disabled={shoppingBusy} onClick={onAddToShopping}>
-                Adaugă la cumpărături
+                {t('Adaugă la cumpărături')}
               </OverflowItem>
             ) : (
               <OverflowItem disabled={shoppingBusy} onClick={onAddToShopping}>
-                Adaugă la cumpărături
+                {t('Adaugă la cumpărături')}
               </OverflowItem>
             )}
-            <OverflowItem onClick={onMinimum}>Stoc minim</OverflowItem>
-            {onEdit ? <OverflowItem onClick={onEdit}>Editează produsul</OverflowItem> : null}
-            {onCorrectUnit ? <OverflowItem onClick={onCorrectUnit}>Corectează unitatea</OverflowItem> : null}
-            <OverflowItem onClick={onLots}>Loturi</OverflowItem>
-            <OverflowItem onClick={onHistory}>Istoric</OverflowItem>
-            <OverflowItem onClick={onAddStock}>Adaugă stoc</OverflowItem>
-            {countUnit && onQuickConsume ? <OverflowItem onClick={onQuickConsume}>Consumă 1</OverflowItem> : null}
-            {countUnit ? <OverflowItem onClick={onConsume}>Consumă altă cantitate</OverflowItem> : null}
+            <OverflowItem onClick={onMinimum}>{t('Stoc minim')}</OverflowItem>
+            {onToggleKind ? (
+              <OverflowItem onClick={onToggleKind}>
+                {item.kind === 'household' ? t('Marchează ca mâncare') : t('Marchează ca produs de casă')}
+              </OverflowItem>
+            ) : null}
+            {onEdit ? <OverflowItem onClick={onEdit}>{t('Editează produsul')}</OverflowItem> : null}
+            {onCorrectUnit ? <OverflowItem onClick={onCorrectUnit}>{t('Corectează unitatea')}</OverflowItem> : null}
+            <OverflowItem onClick={onLots}>{t('Loturi')}</OverflowItem>
+            <OverflowItem onClick={onHistory}>{t('Istoric')}</OverflowItem>
+            <OverflowItem onClick={onAddStock}>{t('Adaugă stoc')}</OverflowItem>
+            {countUnit && onQuickConsume ? <OverflowItem onClick={onQuickConsume}>{t('Consumă 1')}</OverflowItem> : null}
+            {countUnit ? <OverflowItem onClick={onConsume}>{t('Consumă altă cantitate')}</OverflowItem> : null}
           </div>
         </details>
       </div>
@@ -214,7 +238,7 @@ function summarizeLocations(item: InventoryItem): string | null {
   if (names.length === 1) {
     return item.lots.length === 1
       ? names[0] ?? null
-      : `${names[0]} · ${item.lots.length} loturi`
+      : t('{name} · {n} loturi', { name: names[0] ?? '', n: item.lots.length })
   }
 
   return names.slice(0, 3).join(' · ')

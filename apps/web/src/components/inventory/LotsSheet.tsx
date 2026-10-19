@@ -16,6 +16,7 @@ import {
 } from '../../lib/inventory-format'
 import { QUANTITY_INVALID_MESSAGE, mapPantryApiError } from '../../lib/pantry-api-error'
 import { addStock, updateLot } from '../../lib/pantry-api'
+import { t } from '../../i18n/index'
 
 const fieldClassName =
   'mt-1.5 h-touch min-h-touch w-full rounded-lg border border-border bg-surface px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60'
@@ -69,8 +70,8 @@ export function LotsSheet({
 
   return (
     <>
-      <InventorySheet title={`Loturi · ${item.product.name}`} onClose={onClose}>
-        {item.lots.length === 0 ? <p className="text-sm text-muted">Nu există loturi.</p> : null}
+      <InventorySheet title={t('Loturi · {name}', { name: item.product.name })} onClose={onClose}>
+        {item.lots.length === 0 ? <p className="text-sm text-muted">{t('Nu există loturi.')}</p> : null}
         <ul className="space-y-2">
           {item.lots.map((lot) => {
             const plusStep = lotQuickAddStep(item.product)
@@ -94,7 +95,7 @@ export function LotsSheet({
                   )}
                   {plusStep?.asPackage ? (
                     <span className="ml-1.5">
-                      1 pachet ({formatQuantity(plusStep.quantity, item.product.unit)})
+                      {t('1 pachet (')}{formatQuantity(plusStep.quantity, item.product.unit)})
                     </span>
                   ) : null}
                 </button>
@@ -102,7 +103,7 @@ export function LotsSheet({
                   type="button"
                   className="flex h-touch min-h-touch min-w-touch items-center justify-center rounded-lg border border-border px-3 text-sm font-medium"
                   onClick={() => setEditing(lot)}
-                  aria-label="Editează lotul"
+                  aria-label={t('Editează lotul')}
                 >
                   <Pencil className="size-4" aria-hidden="true" />
                 </button>
@@ -113,7 +114,7 @@ export function LotsSheet({
         </ul>
         {plusError ? (
           <p className="mt-3 text-sm text-destructive" role="alert">
-            {plusError}
+            {plusError ? t(plusError) : null}
           </p>
         ) : null}
         <button
@@ -122,7 +123,7 @@ export function LotsSheet({
           onClick={() => setAddingExpiry(true)}
         >
           <Plus className="size-4" aria-hidden="true" />
-          Altă dată de expirare
+          {t('Altă dată de expirare')}
         </button>
       </InventorySheet>
 
@@ -207,7 +208,7 @@ function EditLotSheet({
     }
 
     if (parsed === 0 && !confirmRemove) {
-      setFormError('Acest lot va fi eliminat din inventar.')
+      setFormError(t('Acest lot va fi eliminat din inventar.'))
       return
     }
 
@@ -236,11 +237,11 @@ function EditLotSheet({
   const willRemove = Number.isFinite(parsedQuantity) && parsedQuantity === 0
 
   return (
-    <InventorySheet title="Editează lotul" onClose={onClose}>
+    <InventorySheet title={t('Editează lotul')} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate
+            {t('Cantitate')}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -259,7 +260,7 @@ function EditLotSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={locationIdField}>
-            Locație
+            {t('Locație')}
           </label>
           <select
             id={locationIdField}
@@ -277,7 +278,7 @@ function EditLotSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={expiryId}>
-            Data expirării
+            {t('Data expirării')}
           </label>
           <input
             id={expiryId}
@@ -287,7 +288,7 @@ function EditLotSheet({
             disabled={isSubmitting}
             className={fieldClassName}
           />
-          <p className="mt-1 text-sm text-muted">Lasă gol pentru fără dată de expirare.</p>
+          <p className="mt-1 text-sm text-muted">{t('Lasă gol pentru fără dată de expirare.')}</p>
         </div>
         {willRemove ? (
           <label className="flex items-start gap-2 text-sm" htmlFor={confirmId}>
@@ -298,11 +299,11 @@ function EditLotSheet({
               onChange={(event) => setConfirmRemove(event.target.checked)}
               className="mt-1"
             />
-            <span>Acest lot va fi eliminat din inventar.</span>
+            <span>{t('Acest lot va fi eliminat din inventar.')}</span>
           </label>
         ) : null}
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -310,7 +311,7 @@ function EditLotSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : willRemove ? 'Elimină lotul' : 'Salvează'}
+          {isSubmitting ? t('Se salvează...') : willRemove ? t('Elimină lotul') : t('Salvează')}
         </button>
       </form>
     </InventorySheet>
@@ -371,11 +372,11 @@ function AddExpiryLotSheet({
   }
 
   return (
-    <InventorySheet title="Altă dată de expirare" onClose={onClose}>
+    <InventorySheet title={t('Altă dată de expirare')} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate ({unitLabel(item.product.unit)})
+            {t('Cantitate (')}{unitLabel(item.product.unit)})
           </label>
           <input
             id={quantityId}
@@ -389,7 +390,7 @@ function AddExpiryLotSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={locationIdField}>
-            Locație
+            {t('Locație')}
           </label>
           <select
             id={locationIdField}
@@ -407,7 +408,7 @@ function AddExpiryLotSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={expiryId}>
-            Data expirării (opțional)
+            {t('Data expirării (opțional)')}
           </label>
           <input
             id={expiryId}
@@ -419,7 +420,7 @@ function AddExpiryLotSheet({
           />
         </div>
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -427,7 +428,7 @@ function AddExpiryLotSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Adaugă lot'}
+          {isSubmitting ? t('Se salvează...') : t('Adaugă lot')}
         </button>
       </form>
     </InventorySheet>
@@ -482,14 +483,14 @@ function AddToLotSheet({
   }
 
   return (
-    <InventorySheet title="Adaugă în acest lot" onClose={onClose}>
+    <InventorySheet title={t('Adaugă în acest lot')} onClose={onClose}>
       <p className="mb-3 text-sm text-muted">
         {lot.locationName} · {formatLotExpiryLine(lot.expiresOn)}
       </p>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate ({unitLabel(item.product.unit)})
+            {t('Cantitate (')}{unitLabel(item.product.unit)})
           </label>
           <input
             id={quantityId}
@@ -502,7 +503,7 @@ function AddToLotSheet({
           />
         </div>
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -510,7 +511,7 @@ function AddToLotSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Adaugă'}
+          {isSubmitting ? t('Se salvează...') : t('Adaugă')}
         </button>
       </form>
     </InventorySheet>

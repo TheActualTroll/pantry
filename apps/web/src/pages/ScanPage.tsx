@@ -37,6 +37,7 @@ import {
   type ReceiptExtractResponse,
 } from '../lib/pantry-api'
 import { productDisplayImageUrl, productHasVisibleImage } from '../lib/product-image'
+import { t } from '../i18n/index'
 
 const fieldClassName =
   'mt-1.5 h-touch min-h-touch w-full rounded-lg border border-border bg-surface px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60'
@@ -154,8 +155,8 @@ export function ScanPage() {
 
       {view.phase === 'lookup' ? (
         <div className="mt-16 flex flex-col items-center text-muted">
-          <LoaderCircle className="size-6 animate-spin" aria-label="Se caută produsul" />
-          <p className="mt-3 text-sm">Căutăm {view.barcode}…</p>
+          <LoaderCircle className="size-6 animate-spin" aria-label={t('Se caută produsul')} />
+          <p className="mt-3 text-sm">{t('Căutăm')}{' '}{view.barcode}…</p>
         </div>
       ) : null}
 
@@ -229,28 +230,28 @@ function IdleScan({
 }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Scan</h1>
-      <p className="mt-2 text-muted">Scanează un cod de bare sau un bon. Camera se deschide doar când apeși un buton.</p>
+      <h1 className="text-2xl font-semibold tracking-tight">{t('Scan')}</h1>
+      <p className="mt-2 text-muted">{t('Scanează un cod de bare sau un bon. Camera se deschide doar când apeși un buton.')}</p>
       <button
         type="button"
         onClick={onScan}
         className="mt-6 flex h-touch min-h-touch w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground"
       >
-        Scanează cod de bare
+        {t('Scanează cod de bare')}
       </button>
       <button
         type="button"
         onClick={onReceipt}
         className="mt-3 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
       >
-        Scanează bon
+        {t('Scanează bon')}
       </button>
       <button
         type="button"
         onClick={onManual}
         className="mt-3 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
       >
-        Introdu codul manual
+        {t('Introdu codul manual')}
       </button>
     </div>
   )
@@ -269,7 +270,7 @@ function UnavailableScan({
 }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Scan</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t('Scan')}</h1>
       <p className="mt-3 text-sm">{CATALOG_UNAVAILABLE_MESSAGE}</p>
       <p className="mt-1 text-sm text-muted">{barcode}</p>
       <button
@@ -277,28 +278,28 @@ function UnavailableScan({
         onClick={onRetry}
         className="mt-6 flex h-touch min-h-touch w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground"
       >
-        Încearcă din nou
+        {t('Încearcă din nou')}
       </button>
       <button
         type="button"
         onClick={onRescan}
         className="mt-3 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
       >
-        Scanează din nou
+        {t('Scanează din nou')}
       </button>
       <button
         type="button"
         onClick={onManual}
         className="mt-3 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
       >
-        Introdu codul manual
+        {t('Introdu codul manual')}
       </button>
     </div>
   )
 }
 
 function catalogLabel(catalog: ExternalCatalogId) {
-  return catalog === 'open_products_facts' ? 'Open Products Facts' : 'Open Food Facts'
+  return catalog === 'open_products_facts' ? t('Open Products Facts') : t('Open Food Facts')
 }
 
 function catalogUrl(catalog: ExternalCatalogId, barcode: string) {
@@ -320,7 +321,7 @@ function NutritionBlock({ nutrition }: { nutrition: ProductNutrition | null }) {
 
   return (
     <div className="mt-3 rounded-xl bg-surface px-3 py-2 text-sm">
-      <p className="font-medium">Valori nutriționale / 100 g</p>
+      <p className="font-medium">{t('Valori nutriționale / 100 g')}</p>
       {kcal != null ? <p className="mt-1">{formatKcal100g(kcal)}</p> : null}
       {macros ? <p className="mt-1 text-muted">{macros}</p> : null}
     </div>
@@ -342,7 +343,7 @@ function ExistingProductScan({
 }) {
   const [product, setProduct] = useState(initialProduct)
   const [imageOpen, setImageOpen] = useState(false)
-  const imageLabel = productHasVisibleImage(product) ? 'Schimbă poza' : 'Adaugă poză'
+  const imageLabel = productHasVisibleImage(product) ? t('Schimbă poza') : t('Adaugă poză')
 
   return (
     <div>
@@ -371,7 +372,7 @@ function ExistingProductScan({
         onSaved={onSaved}
       />
       <button type="button" onClick={onRescan} className="mt-3 w-full text-sm text-muted">
-        Scanează alt produs
+        {t('Scanează alt produs')}
       </button>
       {imageOpen ? (
         <ProductImageSheet
@@ -406,7 +407,7 @@ function ExternalProductScan({
   onSaved: () => Promise<void> | void
   onRescan: () => void
 }) {
-  const displayName = preview.name?.trim() || preview.brand?.trim() || `Produs ${barcode}`
+  const displayName = preview.name?.trim() || preview.brand?.trim() || t('Produs {barcode}', { barcode })
 
   async function ensureImported(): Promise<string> {
     if (importedId) {
@@ -439,7 +440,7 @@ function ExternalProductScan({
         onSaved={onSaved}
       />
       <button type="button" onClick={onRescan} className="mt-3 w-full text-sm text-muted">
-        Scanează alt produs
+        {t('Scanează alt produs')}
       </button>
     </div>
   )
@@ -494,20 +495,20 @@ function UnknownProductScan({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Produsul nu a fost găsit.</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{t('Produsul nu a fost găsit.')}</h1>
       <p className="mt-2 text-sm text-muted">
-        Îl poți adăuga manual și Pantry va recunoaște codul data viitoare.
+        {t('Îl poți adăuga manual și Pantry va recunoaște codul data viitoare.')}
       </p>
-      <p className="mt-2 text-sm">Cod de bare: {barcode}</p>
+      <p className="mt-2 text-sm">{t('Cod de bare:')}{' '}{barcode}</p>
       {locked ? (
         <p className="mt-3 text-sm text-warning">
-          Produsul a fost creat, dar stocul nu s-a salvat. Completează cantitatea și încearcă din nou.
+          {t('Produsul a fost creat, dar stocul nu s-a salvat. Completează cantitatea și încearcă din nou.')}
         </p>
       ) : null}
       <div className="mt-4 flex flex-col gap-3">
         <div>
           <label className="text-sm font-medium" htmlFor={nameId}>
-            Produs
+            {t('Produs')}
           </label>
           <input
             id={nameId}
@@ -521,7 +522,7 @@ function UnknownProductScan({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={brandId}>
-            Brand (opțional)
+            {t('Brand (opțional)')}
           </label>
           <input
             id={brandId}
@@ -534,7 +535,7 @@ function UnknownProductScan({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={unitId}>
-            Unitate
+            {t('Unitate')}
           </label>
           <select
             id={unitId}
@@ -570,7 +571,7 @@ function UnknownProductScan({
         }}
       />
       <button type="button" onClick={onRescan} className="mt-3 w-full text-sm text-muted">
-        Scanează alt produs
+        {t('Scanează alt produs')}
       </button>
     </div>
   )
@@ -606,7 +607,7 @@ function ProductSummary({
           {quantityText ? <p className="mt-1 text-sm text-muted">{quantityText}</p> : null}
           {catalog ? (
             <p className="mt-2 text-xs text-muted">
-              Date:{' '}
+              {t('Date:')}{' '}
               {barcode ? (
                 <a
                   href={catalogUrl(catalog, barcode)}
@@ -635,7 +636,7 @@ function StockForm({
   locations,
   defaultLocationId,
   resolveProductId,
-  submitLabel = 'Adaugă în inventar',
+  submitLabel = t('Adaugă în inventar'),
   validateBeforeCreate,
   onSaved,
 }: {
@@ -685,7 +686,7 @@ function StockForm({
     }
 
     if (!locationId) {
-      setFormError('Alege o locație.')
+      setFormError(t('Alege o locație.'))
       return
     }
 
@@ -722,7 +723,7 @@ function StockForm({
     <form className="mt-5 flex flex-col gap-3" onSubmit={handleSubmit}>
       <div>
         <label className="text-sm font-medium" htmlFor={quantityId}>
-          Cantitate ({unitLabel(unit)})
+          {t('Cantitate (')}{unitLabel(unit)})
         </label>
         <input
           id={quantityId}
@@ -736,12 +737,12 @@ function StockForm({
         {suggestedQuantity != null ? (
           <p className="mt-1 text-sm text-warning">{catalogStockSuggestionHint(suggestedQuantity, unit)}</p>
         ) : (
-          <p className="mt-1 text-sm text-muted">Introdu cantitatea reală înainte de a salva.</p>
+          <p className="mt-1 text-sm text-muted">{t('Introdu cantitatea reală înainte de a salva.')}</p>
         )}
       </div>
       <div>
         <label className="text-sm font-medium" htmlFor={locationIdField}>
-          Locație
+          {t('Locație')}
         </label>
         <select
           id={locationIdField}
@@ -759,7 +760,7 @@ function StockForm({
       </div>
       <div>
         <label className="text-sm font-medium" htmlFor={expiryId}>
-          Data expirării (opțional)
+          {t('Data expirării (opțional)')}
         </label>
         <input
           id={expiryId}
@@ -771,7 +772,7 @@ function StockForm({
         />
       </div>
       <div role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-        {formError}
+        {formError ? t(formError) : null}
       </div>
       <button
         type="submit"
@@ -780,7 +781,7 @@ function StockForm({
         className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
       >
         {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-        {isSubmitting ? 'Se salvează...' : submitLabel}
+        {isSubmitting ? t('Se salvează...') : submitLabel}
       </button>
     </form>
   )
@@ -802,16 +803,16 @@ function ManualBarcodeSheet({
     try {
       onSearch(validateBarcode(barcode))
     } catch {
-      setError('Introdu un cod de bare valid.')
+      setError(t('Introdu un cod de bare valid.'))
     }
   }
 
   return (
-    <InventorySheet title="Cod de bare" onClose={onClose}>
+    <InventorySheet title={t('Cod de bare')} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={barcodeId}>
-            Cod de bare
+            {t('Cod de bare')}
           </label>
           <input
             id={barcodeId}
@@ -824,13 +825,13 @@ function ManualBarcodeSheet({
           />
         </div>
         <div role="alert" className="min-h-5 text-sm text-destructive">
-          {error}
+          {error ? t(error) : null}
         </div>
         <button
           type="submit"
           className="flex h-touch min-h-touch w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground"
         >
-          Caută produsul
+          {t('Caută produsul')}
         </button>
       </form>
     </InventorySheet>

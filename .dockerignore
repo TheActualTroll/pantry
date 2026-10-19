@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.wrangler
+.git
+.github
+**/.dev.vars*
+**/.env
+**/.env.*
+!**/.env.example
+**/*.tsbuildinfo
+data

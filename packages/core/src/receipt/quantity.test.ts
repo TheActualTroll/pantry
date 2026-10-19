@@ -11,6 +11,8 @@ const packageLine: ReceiptDraftItem = {
   weightValue: null,
   weightUnit: null,
   confidence: 0.9,
+  category: 'food',
+  shelfLifeDays: 7,
 }
 
 const weightedLine: ReceiptDraftItem = {
@@ -22,6 +24,8 @@ const weightedLine: ReceiptDraftItem = {
   weightValue: 0.742,
   weightUnit: 'kg',
   confidence: 0.85,
+  category: 'food',
+  shelfLifeDays: 5,
 }
 
 test('unknown package net quantity stays 1 package for a new product', () => {

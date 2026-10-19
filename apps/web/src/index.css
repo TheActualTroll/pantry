@@ -1,34 +1,39 @@
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 @theme static {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji";
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
   --text-base--line-height: 1.55;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
   --spacing-touch: 2.75rem;
 
-  --color-background: oklch(0.985 0.006 148);
-  --color-surface: oklch(0.995 0.003 148);
+  --color-background: oklch(0.972 0.009 155);
+  --color-surface: oklch(0.955 0.012 155);
   --color-surface-elevated: oklch(1 0 0);
-  --color-text: oklch(0.24 0.018 148);
-  --color-muted: oklch(0.48 0.02 148);
-  --color-border: oklch(0.9 0.012 148);
-  --color-accent: oklch(0.43 0.1 152);
-  --color-accent-foreground: oklch(0.99 0.005 152);
-  --color-destructive: oklch(0.5 0.17 25);
-  --color-warning: oklch(0.62 0.13 75);
-  --color-success: oklch(0.46 0.1 160);
+  --color-text: oklch(0.22 0.02 160);
+  --color-muted: oklch(0.5 0.022 160);
+  --color-border: oklch(0.91 0.012 155);
+  --color-accent: oklch(0.5 0.13 156);
+  --color-accent-foreground: oklch(0.99 0.005 155);
+  --color-accent-soft: oklch(0.935 0.045 155);
+  --color-destructive: oklch(0.54 0.19 25);
+  --color-destructive-soft: oklch(0.95 0.035 25);
+  --color-warning: oklch(0.56 0.14 65);
+  --color-warning-soft: oklch(0.95 0.06 85);
+  --color-success: oklch(0.46 0.11 160);
   --color-ring: var(--color-accent);
 
   --shadow-surface:
-    0 1px 2px oklch(0.24 0.018 148 / 0.05),
-    0 1px 3px oklch(0.24 0.018 148 / 0.08);
+    0 1px 2px oklch(0.22 0.02 160 / 0.04),
+    0 1px 1px oklch(0.22 0.02 160 / 0.03);
   --shadow-elevated:
-    0 4px 12px oklch(0.24 0.018 148 / 0.08),
-    0 1px 3px oklch(0.24 0.018 148 / 0.06);
+    0 10px 30px -8px oklch(0.22 0.02 160 / 0.18),
+    0 2px 6px oklch(0.22 0.02 160 / 0.06);
 }
 
 :root {
@@ -39,22 +44,25 @@
   :root {
     color-scheme: dark;
 
-    --color-background: oklch(0.17 0.012 150);
-    --color-surface: oklch(0.22 0.014 150);
-    --color-surface-elevated: oklch(0.27 0.016 150);
-    --color-text: oklch(0.94 0.01 150);
-    --color-muted: oklch(0.74 0.018 150);
-    --color-border: oklch(0.33 0.016 150);
-    --color-accent: oklch(0.72 0.11 152);
-    --color-accent-foreground: oklch(0.18 0.03 152);
-    --color-destructive: oklch(0.72 0.15 22);
-    --color-warning: oklch(0.78 0.12 78);
-    --color-success: oklch(0.74 0.1 160);
+    --color-background: oklch(0.16 0.012 160);
+    --color-surface: oklch(0.2 0.014 160);
+    --color-surface-elevated: oklch(0.235 0.016 160);
+    --color-text: oklch(0.95 0.01 155);
+    --color-muted: oklch(0.74 0.02 155);
+    --color-border: oklch(0.31 0.016 160);
+    --color-accent: oklch(0.74 0.14 155);
+    --color-accent-foreground: oklch(0.17 0.03 155);
+    --color-accent-soft: oklch(0.29 0.05 155);
+    --color-destructive: oklch(0.74 0.15 22);
+    --color-destructive-soft: oklch(0.28 0.06 22);
+    --color-warning: oklch(0.8 0.13 80);
+    --color-warning-soft: oklch(0.3 0.06 80);
+    --color-success: oklch(0.76 0.11 160);
 
-    --shadow-surface: 0 1px 2px oklch(0 0 0 / 0.28);
+    --shadow-surface: 0 1px 2px oklch(0 0 0 / 0.3);
     --shadow-elevated:
-      0 8px 24px oklch(0 0 0 / 0.32),
-      0 1px 3px oklch(0 0 0 / 0.2);
+      0 14px 34px -8px oklch(0 0 0 / 0.55),
+      0 2px 6px oklch(0 0 0 / 0.3);
   }
 }
 
@@ -63,14 +71,25 @@
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     min-height: 100dvh;
     margin: 0;
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(60rem 28rem at 50% -10rem, color-mix(in oklch, var(--color-accent) 11%, transparent), transparent);
+    background-repeat: no-repeat;
     color: var(--color-text);
     font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 
   button,
@@ -80,8 +99,236 @@
     font: inherit;
   }
 
+  button,
+  summary,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
+  }
+}
+
+/*
+ * Visual polish. Unlayered on purpose: it must win over Tailwind utilities that
+ * the existing markup already carries, so the whole app restyles consistently
+ * without every component repeating long class lists.
+ */
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  background-color: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-accent) 18%, transparent);
+  outline: none;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-accent);
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+button,
+a.bg-accent,
+a[class*="border"] {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+button:active:not(:disabled),
+a.bg-accent:active {
+  transform: scale(0.975);
+}
+
+button.bg-accent,
+a.bg-accent {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--color-accent) 84%, white),
+    var(--color-accent)
+  );
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.18),
+    0 8px 18px -10px color-mix(in oklch, var(--color-accent) 80%, transparent);
+  font-weight: 600;
+}
+
+button.bg-accent:disabled {
+  box-shadow: none;
+}
+
+button.border-border:not(.bg-accent):not(.bg-surface-elevated),
+a.border-border:not(.bg-accent) {
+  background-color: var(--color-surface-elevated);
+  box-shadow: var(--shadow-surface);
+}
+
+button.border-border:hover:not(:disabled):not(.bg-accent),
+a.border-border:hover:not(.bg-accent) {
+  border-color: color-mix(in oklch, var(--color-accent) 40%, var(--color-border));
+}
+
+/* Cards and list rows */
+.rounded-2xl.border.border-border,
+.rounded-xl.border.border-border:not(button):not(a) {
+  background-color: var(--color-surface-elevated);
+  box-shadow: var(--shadow-surface);
+}
+
+.rounded-xl.border-accent.bg-accent,
+.rounded-full.border-accent.bg-accent {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--color-accent) 84%, white),
+    var(--color-accent)
+  );
+  box-shadow: 0 8px 18px -10px color-mix(in oklch, var(--color-accent) 80%, transparent);
+}
+
+h1 {
+  letter-spacing: -0.025em;
+}
+
+/* Segmented control (language switch etc.) */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  background: var(--color-surface);
+}
+
+.segmented button {
+  min-height: 2.25rem;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.segmented button[data-active="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+  box-shadow: var(--shadow-surface);
+}
+
+/* Status pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.pill[data-tone="danger"] {
+  background: var(--color-destructive-soft);
+  color: var(--color-destructive);
+}
+
+.pill[data-tone="warning"] {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.pill[data-tone="success"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+/* Glass surfaces */
+.glass {
+  background-color: color-mix(in oklch, var(--color-surface-elevated) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+}
+
+/* Motion */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+main > * {
+  animation: rise-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.sheet-backdrop {
+  animation: fade-in 0.2s ease both;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.sheet-panel {
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (min-width: 640px) {
+  .sheet-panel {
+    animation-name: rise-in;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

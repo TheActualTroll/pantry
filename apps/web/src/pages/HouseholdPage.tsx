@@ -16,9 +16,10 @@ import {
   type HouseholdInviteView,
   type HouseholdMemberView,
 } from '../lib/pantry-api'
+import { dateFormat, t } from '../i18n/index'
 
 function roleLabel(role: HouseholdMemberView['role']) {
-  return role === 'owner' ? 'Proprietar' : 'Membru'
+  return role === 'owner' ? t('Proprietar') : t('Membru')
 }
 
 function initials(name: string) {
@@ -36,7 +37,7 @@ function formatInviteDate(value: string) {
     return value
   }
 
-  return new Intl.DateTimeFormat('ro-RO', { dateStyle: 'medium' }).format(new Date(parsed))
+  return dateFormat({ dateStyle: 'medium' }).format(new Date(parsed))
 }
 
 export function HouseholdPage() {
@@ -179,15 +180,15 @@ export function HouseholdPage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold tracking-tight">{household?.name ?? 'Casa'}</h1>
-      <p className="mt-1 text-sm text-muted">Membri și acces</p>
+      <h1 className="text-2xl font-semibold tracking-tight">{household?.name ?? t('Casa')}</h1>
+      <p className="mt-1 text-sm text-muted">{t('Membri și acces')}</p>
 
       {status === 'loading' ? (
         <div className="mt-8 flex justify-center">
           <LoaderCircle className="size-6 animate-spin text-muted" aria-hidden="true" />
         </div>
       ) : null}
-      {status === 'error' ? <p className="mt-6 text-sm text-destructive">{loadError}</p> : null}
+      {status === 'error' ? <p className="mt-6 text-sm text-destructive">{loadError ? t(loadError) : null}</p> : null}
 
       {status === 'ready' ? (
         <>
@@ -200,12 +201,12 @@ export function HouseholdPage() {
                 void handleCreateInvite()
               }}
             >
-              {inviteBusy ? 'Se creează invitația...' : 'Invită persoană'}
+              {inviteBusy ? t('Se creează invitația...') : t('Invită persoană')}
             </button>
           ) : null}
 
           <section className="mt-8">
-            <h2 className="text-sm font-medium tracking-wide text-muted uppercase">Membri</h2>
+            <h2 className="text-sm font-medium tracking-wide text-muted uppercase">{t('Membri')}</h2>
             <ul className="mt-3 flex flex-col gap-2">
               {members.map((member) => (
                 <li
@@ -218,7 +219,7 @@ export function HouseholdPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-text">
                       {member.name}
-                      {member.isCurrentUser ? <span className="ml-1 text-sm font-normal text-muted">Tu</span> : null}
+                      {member.isCurrentUser ? <span className="ml-1 text-sm font-normal text-muted">{t('Tu')}</span> : null}
                     </p>
                     <p className="truncate text-sm text-muted">{member.email}</p>
                     <p className="mt-0.5 text-sm text-muted">{roleLabel(member.role)}</p>
@@ -227,7 +228,7 @@ export function HouseholdPage() {
                     <button
                       type="button"
                       className="flex min-h-touch min-w-touch items-center justify-center rounded-lg text-muted"
-                      aria-label={`Elimină pe ${member.name}`}
+                      aria-label={t('Elimină pe {name}', { name: member.name })}
                       onClick={() => setRemoveTarget(member)}
                     >
                       <MoreHorizontal className="size-5" aria-hidden="true" />
@@ -240,7 +241,7 @@ export function HouseholdPage() {
 
           {isOwner && invites.length > 0 ? (
             <section className="mt-8">
-              <h2 className="text-sm font-medium tracking-wide text-muted uppercase">Invitații active</h2>
+              <h2 className="text-sm font-medium tracking-wide text-muted uppercase">{t('Invitații active')}</h2>
               <ul className="mt-3 flex flex-col gap-2">
                 {invites.map((invite) => (
                   <li
@@ -248,8 +249,8 @@ export function HouseholdPage() {
                     className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-elevated p-3"
                   >
                     <div>
-                      <p className="text-sm text-text">Creată {formatInviteDate(invite.createdAt)}</p>
-                      <p className="text-sm text-muted">Expiră {formatInviteDate(invite.expiresAt)}</p>
+                      <p className="text-sm text-text">{t('Creată')}{' '}{formatInviteDate(invite.createdAt)}</p>
+                      <p className="text-sm text-muted">{t('Expiră')}{' '}{formatInviteDate(invite.expiresAt)}</p>
                     </div>
                     <button
                       type="button"
@@ -258,7 +259,7 @@ export function HouseholdPage() {
                         void handleRevoke(invite.id)
                       }}
                     >
-                      Anulează
+                      {t('Anulează')}
                     </button>
                   </li>
                 ))}
@@ -267,29 +268,29 @@ export function HouseholdPage() {
           ) : null}
 
           {isOwner ? (
-            <p className="mt-8 text-sm text-muted">Transferul proprietății va fi disponibil ulterior.</p>
+            <p className="mt-8 text-sm text-muted">{t('Transferul proprietății va fi disponibil ulterior.')}</p>
           ) : (
             <button
               type="button"
               className="mt-8 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium text-destructive"
               onClick={() => setLeaveOpen(true)}
             >
-              Părăsește casa
+              {t('Părăsește casa')}
             </button>
           )}
 
           {actionError ? (
             <p className="mt-4 text-sm text-destructive" role="alert">
-              {actionError}
+              {actionError ? t(actionError) : null}
             </p>
           ) : null}
         </>
       ) : null}
 
       {createdInvite && household ? (
-        <InventorySheet title={`Invită în ${household.name}`} onClose={() => setCreatedInvite(null)}>
+        <InventorySheet title={t('Invită în {name}', { name: household.name })} onClose={() => setCreatedInvite(null)}>
           <p className="text-sm text-muted">
-            Oricine primește acest link și are un cont Pantry îl poate folosi pentru a intra în household.
+            {t('Oricine primește acest link și are un cont Pantry îl poate folosi pentru a intra în household.')}
           </p>
           <div className="mt-4 flex flex-col gap-2">
             {shareSupported ? (
@@ -300,7 +301,7 @@ export function HouseholdPage() {
                   void handleShare(createdInvite.token)
                 }}
               >
-                Distribuie
+                {t('Distribuie')}
               </button>
             ) : null}
             <button
@@ -310,18 +311,18 @@ export function HouseholdPage() {
                 void handleCopy(createdInvite.token)
               }}
             >
-              Copiază link
+              {t('Copiază link')}
             </button>
           </div>
-          {copied ? <p className="mt-3 text-sm text-success">Link copiat</p> : null}
-          <p className="mt-3 text-sm text-muted">Linkul expiră în 7 zile.</p>
+          {copied ? <p className="mt-3 text-sm text-success">{t('Link copiat')}</p> : null}
+          <p className="mt-3 text-sm text-muted">{t('Linkul expiră în 7 zile.')}</p>
         </InventorySheet>
       ) : null}
 
       {removeTarget ? (
-        <InventorySheet title="Elimină din casă" onClose={() => setRemoveTarget(null)}>
+        <InventorySheet title={t('Elimină din casă')} onClose={() => setRemoveTarget(null)}>
           <p className="text-sm text-muted">
-            {removeTarget.name} nu va mai avea acces la inventarul și lista acestei case.
+            {removeTarget.name}{' '}{t('nu va mai avea acces la inventarul și lista acestei case.')}
           </p>
           <div className="mt-4 flex flex-col gap-2">
             <button
@@ -331,23 +332,23 @@ export function HouseholdPage() {
                 void handleRemove()
               }}
             >
-              Elimină din casă
+              {t('Elimină din casă')}
             </button>
             <button
               type="button"
               className="flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 font-medium text-text"
               onClick={() => setRemoveTarget(null)}
             >
-              Anulează
+              {t('Anulează')}
             </button>
           </div>
         </InventorySheet>
       ) : null}
 
       {leaveOpen ? (
-        <InventorySheet title="Părăsește casa" onClose={() => setLeaveOpen(false)}>
+        <InventorySheet title={t('Părăsește casa')} onClose={() => setLeaveOpen(false)}>
           <p className="text-sm text-muted">
-            Nu vei mai avea acces la inventarul și lista acestei case. Contul tău Pantry rămâne.
+            {t('Nu vei mai avea acces la inventarul și lista acestei case. Contul tău Pantry rămâne.')}
           </p>
           <div className="mt-4 flex flex-col gap-2">
             <button
@@ -357,14 +358,14 @@ export function HouseholdPage() {
                 void handleLeave()
               }}
             >
-              Părăsește casa
+              {t('Părăsește casa')}
             </button>
             <button
               type="button"
               className="flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 font-medium text-text"
               onClick={() => setLeaveOpen(false)}
             >
-              Anulează
+              {t('Anulează')}
             </button>
           </div>
         </InventorySheet>

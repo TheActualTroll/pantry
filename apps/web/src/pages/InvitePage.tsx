@@ -6,6 +6,7 @@ import { authClient } from '../lib/auth-client'
 import { isPantryApiError } from '../lib/api'
 import { mapPantryApiError } from '../lib/pantry-api-error'
 import { acceptInvite, getActiveHousehold, getInvitePreview } from '../lib/pantry-api'
+import { t } from '../i18n/index'
 
 type PreviewState =
   | { status: 'loading' }
@@ -90,7 +91,7 @@ export function InvitePage() {
   return (
     <div className="min-h-dvh overflow-x-clip bg-background">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
-        <p className="text-sm font-medium tracking-wide text-accent">Pantry</p>
+        <p className="text-sm font-medium tracking-wide text-accent">{t('Pantry')}</p>
         <section className="flex flex-1 flex-col justify-center py-6 sm:py-10">
           <header className="flex flex-col items-center text-center">
             <img
@@ -102,19 +103,19 @@ export function InvitePage() {
             />
             <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               {preview.status === 'invalid'
-                ? 'Invitație indisponibilă'
+                ? t('Invitație indisponibilă')
                 : session?.user
-                  ? `Ai fost invitat în „${preview.householdName}”.`
-                  : 'Ai primit o invitație în Pantry'}
+                  ? t('Ai fost invitat în „{name}”.', { name: preview.householdName ?? '' })
+                  : t('Ai primit o invitație în Pantry')}
             </h1>
             <p className="mt-2 max-w-xs text-muted">
               {preview.status === 'invalid'
-                ? 'Linkul nu este valid sau nu mai poate fi folosit.'
+                ? t('Linkul nu este valid sau nu mai poate fi folosit.')
                 : session?.user
-                  ? 'Acceptă invitația pentru a lucra pe aceeași casă.'
+                  ? t('Acceptă invitația pentru a lucra pe aceeași casă.')
                   : preview.householdName
-                    ? `Ai fost invitat în ${preview.householdName}.`
-                    : 'Conectează-te sau creează un cont pentru a continua.'}
+                    ? t('Ai fost invitat în {name}.', { name: preview.householdName })
+                    : t('Conectează-te sau creează un cont pentru a continua.')}
             </p>
           </header>
 
@@ -123,13 +124,13 @@ export function InvitePage() {
               to="/login"
               className="mt-8 flex h-touch min-h-touch items-center justify-center rounded-lg bg-accent px-4 font-medium text-accent-foreground shadow-surface"
             >
-              Mergi la autentificare
+              {t('Mergi la autentificare')}
             </Link>
           ) : session?.user ? (
             <div className="mt-8 flex flex-col gap-3">
               {acceptError ? (
                 <p className="text-center text-sm text-destructive" role="alert">
-                  {acceptError}
+                  {acceptError ? t(acceptError) : null}
                 </p>
               ) : null}
               <button
@@ -142,7 +143,7 @@ export function InvitePage() {
                 }}
               >
                 {isAccepting ? <LoaderCircle className="size-5 animate-spin" aria-hidden="true" /> : null}
-                {isAccepting ? 'Se acceptă...' : `Intră în ${preview.householdName}`}
+                {isAccepting ? t('Se acceptă...') : t('Intră în {name}', { name: preview.householdName ?? '' })}
               </button>
               <button
                 type="button"
@@ -152,7 +153,7 @@ export function InvitePage() {
                   void handleDefer()
                 }}
               >
-                Nu acum
+                {t('Nu acum')}
               </button>
             </div>
           ) : (
@@ -162,14 +163,14 @@ export function InvitePage() {
                 state={returnState}
                 className="flex h-touch min-h-touch items-center justify-center rounded-lg bg-accent px-4 font-medium text-accent-foreground shadow-surface"
               >
-                Conectează-te
+                {t('Conectează-te')}
               </Link>
               <Link
                 to="/register"
                 state={returnState}
                 className="flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 font-medium text-text"
               >
-                Creează cont
+                {t('Creează cont')}
               </Link>
             </div>
           )}

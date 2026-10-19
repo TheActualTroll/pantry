@@ -27,6 +27,7 @@ import {
   removeShoppingItem,
   toggleShoppingItem,
 } from '../lib/pantry-api'
+import { t } from '../i18n/index'
 
 const UNIT_OPTIONS: Array<{ value: Unit; label: string }> = [
   { value: 'g', label: 'g' },
@@ -148,7 +149,7 @@ export function ShoppingPage() {
     <section>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">Cumpărături</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('Cumpărături')}</h1>
           {household ? <p className="mt-1 truncate text-muted">{household.name}</p> : null}
         </div>
         <button
@@ -157,7 +158,7 @@ export function ShoppingPage() {
           onClick={() => setSheet({ type: 'manual' })}
         >
           <Plus className="size-4" aria-hidden="true" />
-          Adaugă produs
+          {t('Adaugă produs')}
         </button>
       </div>
 
@@ -167,40 +168,40 @@ export function ShoppingPage() {
           className="flex h-touch min-h-touch items-center rounded-lg border border-border bg-surface-elevated px-3 text-sm font-medium"
           onClick={() => setSheet({ type: 'products' })}
         >
-          Adaugă din produse
+          {t('Adaugă din produse')}
         </button>
       </div>
 
       {items.length > 0 ? (
         <p className="mt-4 text-sm text-muted">
-          {remaining.length} de cumpărat · {completed.length} cumpărate
+          {remaining.length}{' '}{t('de cumpărat ·')}{' '}{completed.length}{' '}{t('cumpărate')}
         </p>
       ) : null}
 
       {status === 'loading' ? (
         <div className="mt-10 flex justify-center text-muted">
-          <LoaderCircle className="size-6 animate-spin" aria-label="Se încarcă lista de cumpărături" />
+          <LoaderCircle className="size-6 animate-spin" aria-label={t('Se încarcă lista de cumpărături')} />
         </div>
       ) : null}
 
-      {status === 'error' ? <p className="mt-8 text-sm text-destructive">{loadError}</p> : null}
+      {status === 'error' ? <p className="mt-8 text-sm text-destructive">{loadError ? t(loadError) : null}</p> : null}
 
       {actionError ? (
         <p className="mt-4 text-sm text-destructive" role="alert">
-          {actionError}
+          {actionError ? t(actionError) : null}
         </p>
       ) : null}
 
       {empty ? (
         <div className="mt-10 text-center">
-          <p className="text-muted">Lista de cumpărături este goală.</p>
-          <p className="mt-1 text-sm text-muted">Adaugă produsele de care ai nevoie.</p>
+          <p className="text-muted">{t('Lista de cumpărături este goală.')}</p>
+          <p className="mt-1 text-sm text-muted">{t('Adaugă produsele de care ai nevoie.')}</p>
           <button
             type="button"
             className="mt-4 inline-flex h-touch min-h-touch items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface"
             onClick={() => setSheet({ type: 'manual' })}
           >
-            Adaugă produs
+            {t('Adaugă produs')}
           </button>
         </div>
       ) : null}
@@ -227,7 +228,7 @@ export function ShoppingPage() {
           className="mt-5 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-3 text-sm font-medium disabled:opacity-60"
           onClick={() => void handleClearCompleted()}
         >
-          {clearing ? 'Se șterg...' : 'Șterge produsele cumpărate'}
+          {clearing ? t('Se șterg...') : t('Șterge produsele cumpărate')}
         </button>
       ) : null}
 
@@ -304,7 +305,7 @@ function ShoppingItemRow({
           checked={item.checked}
           onChange={onToggle}
           className="size-6 accent-accent"
-          aria-label={item.checked ? `Debifează ${item.name}` : `Bifează ${item.name}`}
+          aria-label={item.checked ? t('Debifează {name}', { name: item.name }) : t('Bifează {name}', { name: item.name })}
         />
       </label>
       <div className="min-w-0 flex-1">
@@ -320,7 +321,7 @@ function ShoppingItemRow({
       <button
         type="button"
         className="flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-lg text-muted"
-        aria-label={`Șterge ${item.name}`}
+        aria-label={t('Șterge {name}', { name: item.name })}
         onClick={onRemove}
       >
         <Trash2 className="size-5" aria-hidden="true" />
@@ -375,7 +376,7 @@ function ManualItemSheet({
     try {
       parsedUnit = validateOptionalShoppingUnit(unit)
     } catch {
-      setFormError('Alege o unitate validă.')
+      setFormError(t('Alege o unitate validă.'))
       return
     }
 
@@ -395,11 +396,11 @@ function ManualItemSheet({
   }
 
   return (
-    <InventorySheet title="Adaugă produs" onClose={onClose}>
+    <InventorySheet title={t('Adaugă produs')} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={nameId}>
-            Produs
+            {t('Produs')}
           </label>
           <input
             id={nameId}
@@ -409,12 +410,12 @@ function ManualItemSheet({
             required
             maxLength={120}
             className={fieldClassName}
-            placeholder="Hârtie de bucătărie"
+            placeholder={t('Hârtie de bucătărie')}
           />
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate (opțional)
+            {t('Cantitate (opțional)')}
           </label>
           <input
             id={quantityId}
@@ -428,7 +429,7 @@ function ManualItemSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={unitId}>
-            Unitate (opțional)
+            {t('Unitate (opțional)')}
           </label>
           <select
             id={unitId}
@@ -437,7 +438,7 @@ function ManualItemSheet({
             disabled={isSubmitting}
             className={fieldClassName}
           >
-            <option value="">Fără unitate</option>
+            <option value="">{t('Fără unitate')}</option>
             {UNIT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -446,7 +447,7 @@ function ManualItemSheet({
           </select>
         </div>
         <div role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -455,7 +456,7 @@ function ManualItemSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se adaugă...' : 'Adaugă'}
+          {isSubmitting ? t('Se adaugă...') : t('Adaugă')}
         </button>
       </form>
     </InventorySheet>
@@ -578,12 +579,12 @@ function ProductSearchSheet({
   }
 
   return (
-    <InventorySheet title={selected ? `Cantitate · ${selected.name}` : 'Adaugă din produse'} onClose={onClose}>
+    <InventorySheet title={selected ? t('Cantitate · {name}', { name: selected.name }) : t('Adaugă din produse')} onClose={onClose}>
       {selected ? (
         <form className="flex flex-col gap-3" onSubmit={handleConfirm}>
           <div>
             <label className="text-sm font-medium" htmlFor={quantityId}>
-              Cantitate
+              {t('Cantitate')}
             </label>
             <input
               id={quantityId}
@@ -598,7 +599,7 @@ function ProductSearchSheet({
           </div>
           <div>
             <label className="text-sm font-medium" htmlFor={unitId}>
-              Unitate
+              {t('Unitate')}
             </label>
             <select
               id={unitId}
@@ -615,7 +616,7 @@ function ProductSearchSheet({
             </select>
           </div>
           <div role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-            {formError}
+            {formError ? t(formError) : null}
           </div>
           <button
             type="submit"
@@ -624,13 +625,13 @@ function ProductSearchSheet({
             className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
           >
             {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {isSubmitting ? 'Se adaugă...' : 'Adaugă'}
+            {isSubmitting ? t('Se adaugă...') : t('Adaugă')}
           </button>
         </form>
       ) : (
         <div>
           <label className="sr-only" htmlFor={searchId}>
-            Caută produse
+            {t('Caută produse')}
           </label>
           <div className="relative">
             <Search
@@ -642,23 +643,23 @@ function ProductSearchSheet({
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Caută produse"
+              placeholder={t('Caută produse')}
               className={`${fieldClassName} mt-0 pl-9`}
             />
           </div>
           {status === 'loading' ? (
             <div className="mt-6 flex justify-center text-muted">
-              <LoaderCircle className="size-5 animate-spin" aria-label="Se caută produse" />
+              <LoaderCircle className="size-5 animate-spin" aria-label={t('Se caută produse')} />
             </div>
           ) : null}
-          {status === 'error' ? <p className="mt-4 text-sm text-destructive">{loadError}</p> : null}
+          {status === 'error' ? <p className="mt-4 text-sm text-destructive">{loadError ? t(loadError) : null}</p> : null}
           {formError ? (
             <p className="mt-4 text-sm text-destructive" role="alert">
-              {formError}
+              {formError ? t(formError) : null}
             </p>
           ) : null}
           {status === 'ready' && products.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">Niciun produs găsit.</p>
+            <p className="mt-4 text-sm text-muted">{t('Niciun produs găsit.')}</p>
           ) : null}
           {status === 'ready' && products.length > 0 ? (
             <ul className="mt-4 space-y-1">

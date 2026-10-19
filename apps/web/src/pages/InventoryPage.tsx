@@ -1,7 +1,8 @@
 import { DomainError, suggestShoppingQuantity, validateQuantity, validateProductName, type InventoryItem, type InventorySummary, type Unit } from '@pantry/core'
 import { LoaderCircle, Plus, Search } from 'lucide-react'
+import { StockCheckCard } from '../components/inventory/StockCheckCard'
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import {
   CorrectUnitSheet,
   EditProductSheet,
@@ -27,7 +28,21 @@ import {
   PRODUCT_NAME_INVALID_MESSAGE,
   mapPantryApiError,
 } from '../lib/pantry-api-error'
-import { addStock, addShoppingProductItem, consumeStock, createProduct, getInventory, getInventorySummary } from '../lib/pantry-api'
+import {
+  addStock,
+  addShoppingProductItem,
+  consumeStock,
+  createProduct,
+  getInventory,
+  getInventorySummary,
+  getStockChecks,
+  respondStockCheck,
+  setProductKind,
+  type ProductKind,
+  type StockCheckDueItem,
+  type StockLevel,
+} from '../lib/pantry-api'
+import { t } from '../i18n/index'
 
 const UNIT_OPTIONS: Array<{ value: Unit; label: string }> = [
   { value: 'g', label: 'g' },
@@ -69,6 +84,9 @@ export function InventoryPage() {
   const [shopNotice, setShopNotice] = useState<string | null>(null)
   const [shopError, setShopError] = useState<string | null>(null)
   const [shoppingProductId, setShoppingProductId] = useState<string | null>(null)
+  const [dueChecks, setDueChecks] = useState<StockCheckDueItem[]>([])
+  const [searchParams] = useSearchParams()
+  const focusProductId = searchParams.get('stockCheck')
 
   const householdId = household?.id ?? null
   const activeLocationId = locations.some((location) => location.id === locationId)
@@ -85,6 +103,8 @@ export function InventoryPage() {
     ])
     setItems(data.items)
     setSummary(nextSummary)
+    // Due checks are a nicety; never block the inventory on them.
+    setDueChecks(await getStockChecks().then((result) => result.items).catch(() => []))
   }, [activeLocationId, search, today])
 
   useEffect(() => {
@@ -148,7 +168,7 @@ export function InventoryPage() {
       unit,
     })
     setShopError(null)
-    setShopNotice(`${item.product.name} a fost adăugat la cumpărături.`)
+    setShopNotice(t('{name} a fost adăugat la cumpărături.', { name: item.product.name }))
   }
 
   async function handleAddToShopping(item: InventoryItem) {
@@ -209,6 +229,22 @@ export function InventoryPage() {
     })
   }
 
+  function handleStockLevel(productId: string, level: StockLevel) {
+    void runProductAction(productId, async () => {
+      const result = await respondStockCheck(productId, level)
+      if (result.addedToShopping) {
+        setShopNotice(t('Adăugat pe lista de cumpărături.'))
+      }
+    })
+  }
+
+  function handleToggleKind(item: InventoryItem) {
+    const next: ProductKind = item.kind === 'household' ? 'food' : 'household'
+    void runProductAction(item.product.id, async () => {
+      await setProductKind(item.product.id, next)
+    })
+  }
+
   function handleQuickConsume(item: InventoryItem) {
     void runProductAction(item.product.id, async () => {
       await consumeStock({ productId: item.product.id, quantity: 1 })
@@ -219,7 +255,7 @@ export function InventoryPage() {
     <section>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">Inventar</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('Inventar')}</h1>
           {household ? <p className="mt-1 truncate text-muted">{household.name}</p> : null}
         </div>
         <button
@@ -228,26 +264,26 @@ export function InventoryPage() {
           onClick={() => setSheet({ type: 'add-product' })}
         >
           <Plus className="size-4" aria-hidden="true" />
-          Adaugă produs
+          {t('Adaugă produs')}
         </button>
       </div>
 
       {summary ? (
         <div className="mt-4 grid grid-cols-3 gap-2">
           <SummaryCard
-            label="Produse"
+            label={t('Produse')}
             value={summary.products}
             selected={statusFilter === 'all'}
             onClick={() => setStatusFilter('all')}
           />
           <SummaryCard
-            label="Stoc scăzut"
+            label={t('Stoc scăzut')}
             value={summary.lowStock}
             selected={statusFilter === 'low'}
             onClick={() => setStatusFilter('low')}
           />
           <SummaryCard
-            label="Expiră curând"
+            label={t('Expiră curând')}
             value={summary.expiringSoon + summary.expired}
             selected={statusFilter === 'soon'}
             onClick={() => setStatusFilter('soon')}
@@ -255,9 +291,16 @@ export function InventoryPage() {
         </div>
       ) : null}
 
+      <StockCheckCard
+        items={dueChecks}
+        busyProductId={busyProductId}
+        focusProductId={focusProductId}
+        onAnswer={(due, level) => handleStockLevel(due.productId, level)}
+      />
+
       {attention.length > 0 ? (
         <section className="mt-4">
-          <h2 className="text-sm font-semibold">Necesită atenție</h2>
+          <h2 className="text-sm font-semibold">{t('Necesită atenție')}</h2>
           <ul className="mt-2 space-y-2">
             {attention.map((card) => (
               <li key={`${card.reason}-${card.productId}`}>
@@ -279,7 +322,7 @@ export function InventoryPage() {
 
       <div className="mt-4">
         <label className="sr-only" htmlFor={searchId}>
-          Caută produse
+          {t('Caută produse')}
         </label>
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
@@ -288,21 +331,21 @@ export function InventoryPage() {
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Caută produse"
+            placeholder={t('Caută produse')}
             className={`${fieldClassName} mt-0 pl-9`}
           />
         </div>
       </div>
 
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-        <FilterChip label="Toate" selected={statusFilter === 'all'} onClick={() => setStatusFilter('all')} />
-        <FilterChip label="Stoc scăzut" selected={statusFilter === 'low'} onClick={() => setStatusFilter('low')} />
-        <FilterChip label="Expiră curând" selected={statusFilter === 'soon'} onClick={() => setStatusFilter('soon')} />
-        <FilterChip label="Expirate" selected={statusFilter === 'expired'} onClick={() => setStatusFilter('expired')} />
+        <FilterChip label={t('Toate')} selected={statusFilter === 'all'} onClick={() => setStatusFilter('all')} />
+        <FilterChip label={t('Stoc scăzut')} selected={statusFilter === 'low'} onClick={() => setStatusFilter('low')} />
+        <FilterChip label={t('Expiră curând')} selected={statusFilter === 'soon'} onClick={() => setStatusFilter('soon')} />
+        <FilterChip label={t('Expirate')} selected={statusFilter === 'expired'} onClick={() => setStatusFilter('expired')} />
       </div>
 
       <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-        <FilterChip label="Toate locațiile" selected={activeLocationId === null} onClick={() => setLocationId(null)} />
+        <FilterChip label={t('Toate locațiile')} selected={activeLocationId === null} onClick={() => setLocationId(null)} />
         {locations.map((location) => (
           <FilterChip
             key={location.id}
@@ -315,42 +358,42 @@ export function InventoryPage() {
 
       {status === 'loading' ? (
         <div className="mt-10 flex justify-center text-muted">
-          <LoaderCircle className="size-6 animate-spin" aria-label="Se încarcă inventarul" />
+          <LoaderCircle className="size-6 animate-spin" aria-label={t('Se încarcă inventarul')} />
         </div>
       ) : null}
 
-      {status === 'error' ? <p className="mt-8 text-sm text-destructive">{loadError}</p> : null}
+      {status === 'error' ? <p className="mt-8 text-sm text-destructive">{loadError ? t(loadError) : null}</p> : null}
 
       {shopNotice ? <p className="mt-4 text-sm text-success">{shopNotice}</p> : null}
       {shopError ? (
         <p className="mt-4 text-sm text-destructive" role="alert">
-          {shopError}
+          {shopError ? t(shopError) : null}
         </p>
       ) : null}
 
       {empty ? (
         <div className="mt-10 text-center">
-          <p className="text-muted">Inventarul tău este gol.</p>
-          <p className="mt-1 text-sm text-muted">Adaugă un produs sau scanează un cod de bare.</p>
+          <p className="text-muted">{t('Inventarul tău este gol.')}</p>
+          <p className="mt-1 text-sm text-muted">{t('Adaugă un produs sau scanează un cod de bare.')}</p>
           <div className="mt-4 flex justify-center gap-2">
             <button
               type="button"
               className="inline-flex h-touch min-h-touch items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface"
               onClick={() => setSheet({ type: 'add-product' })}
             >
-              Adaugă primul produs
+              {t('Adaugă primul produs')}
             </button>
             <Link
               to="/scan"
               className="inline-flex h-touch min-h-touch items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
             >
-              Scanează
+              {t('Scanează')}
             </Link>
           </div>
         </div>
       ) : null}
 
-      {noMatches ? <p className="mt-8 text-muted">Niciun produs găsit.</p> : null}
+      {noMatches ? <p className="mt-8 text-muted">{t('Niciun produs găsit.')}</p> : null}
 
       {status === 'ready' && visibleItems.length > 0 ? (
         <ul className="mt-5 space-y-3">
@@ -378,6 +421,8 @@ export function InventoryPage() {
                 onLots={() => setSheet({ type: 'lots', item })}
                 onHistory={() => setSheet({ type: 'history', item })}
                 onChangeImage={() => setSheet({ type: 'image', item })}
+                onStockLevel={(level) => handleStockLevel(item.product.id, level)}
+                onToggleKind={() => handleToggleKind(item)}
               />
             </li>
           ))}
@@ -513,12 +558,12 @@ function SummaryCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border px-2 py-2 text-left ${
+      className={`rounded-xl border px-3 py-2.5 text-left ${
         selected ? 'border-accent bg-accent text-accent-foreground' : 'border-border bg-surface-elevated'
       }`}
     >
-      <p className="text-lg font-semibold tabular-nums">{value}</p>
-      <p className="text-xs leading-tight">{label}</p>
+      <p className="text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <p className="text-xs leading-tight opacity-80">{label}</p>
     </button>
   )
 }
@@ -572,6 +617,7 @@ function AddProductSheet({
   const [locationId, setLocationId] = useState(defaultLocationId)
   const [expiresOn, setExpiresOn] = useState('')
   const [createdProductId, setCreatedProductId] = useState<string | null>(null)
+  const [kind, setKind] = useState<ProductKind>('food')
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -600,7 +646,7 @@ function AddProductSheet({
     }
 
     if (!locationId) {
-      setFormError('Alege o locație.')
+      setFormError(t('Alege o locație.'))
       return
     }
 
@@ -616,6 +662,9 @@ function AddProductSheet({
         })
         productId = created.product.id
         setCreatedProductId(productId)
+        if (kind === 'household') {
+          await setProductKind(productId, 'household').catch(() => undefined)
+        }
       }
 
       await addStock({
@@ -635,16 +684,16 @@ function AddProductSheet({
   const productLocked = createdProductId !== null
 
   return (
-    <InventorySheet title={productLocked ? 'Finalizează stocul' : 'Adaugă produs'} onClose={onClose}>
+    <InventorySheet title={productLocked ? t('Finalizează stocul') : t('Adaugă produs')} onClose={onClose}>
       {productLocked ? (
         <p className="mb-3 text-sm text-warning">
-          Produsul a fost creat, dar stocul nu s-a salvat. Completează cantitatea și încearcă din nou.
+          {t('Produsul a fost creat, dar stocul nu s-a salvat. Completează cantitatea și încearcă din nou.')}
         </p>
       ) : null}
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={nameId}>
-            Produs
+            {t('Produs')}
           </label>
           <input
             id={nameId}
@@ -654,12 +703,12 @@ function AddProductSheet({
             required
             maxLength={120}
             className={fieldClassName}
-            placeholder="Lapte"
+            placeholder={t('Lapte')}
           />
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={brandId}>
-            Brand (opțional)
+            {t('Brand (opțional)')}
           </label>
           <input
             id={brandId}
@@ -668,12 +717,30 @@ function AddProductSheet({
             disabled={isSubmitting || productLocked}
             maxLength={80}
             className={fieldClassName}
-            placeholder="Pilos"
+            placeholder={t('Pilos')}
           />
         </div>
         <div>
+          <span className="text-sm font-medium">{t('Tip produs')}</span>
+          <div role="group" aria-label={t('Tip produs')} className="segmented mt-1.5 w-full">
+            {(['food', 'household'] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                disabled={isSubmitting || productLocked}
+                aria-pressed={kind === option}
+                data-active={kind === option}
+                className="flex-1 disabled:opacity-60"
+                onClick={() => setKind(option)}
+              >
+                {option === 'food' ? t('Mâncare') : t('Produs de casă')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
           <label className="text-sm font-medium" htmlFor={unitId}>
-            Unitate
+            {t('Unitate')}
           </label>
           <select
             id={unitId}
@@ -691,7 +758,7 @@ function AddProductSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate
+            {t('Cantitate')}
           </label>
           <input
             id={quantityId}
@@ -706,7 +773,7 @@ function AddProductSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={locationIdField}>
-            Locație
+            {t('Locație')}
           </label>
           <select
             id={locationIdField}
@@ -724,7 +791,7 @@ function AddProductSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={expiryId}>
-            Data expirării (opțional)
+            {t('Data expirării (opțional)')}
           </label>
           <input
             id={expiryId}
@@ -736,7 +803,7 @@ function AddProductSheet({
           />
         </div>
         <div id={errorId} role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -745,7 +812,7 @@ function AddProductSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : productLocked ? 'Salvează stocul' : 'Adaugă produs'}
+          {isSubmitting ? t('Se salvează...') : productLocked ? t('Salvează stocul') : t('Adaugă produs')}
         </button>
       </form>
     </InventorySheet>
@@ -806,11 +873,11 @@ function AddStockSheet({
   }
 
   return (
-    <InventorySheet title={`Adaugă stoc · ${item.product.name}`} onClose={onClose}>
+    <InventorySheet title={t('Adaugă stoc · {name}', { name: item.product.name })} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate ({unitLabel(item.product.unit)})
+            {t('Cantitate (')}{unitLabel(item.product.unit)})
           </label>
           <input
             id={quantityId}
@@ -825,7 +892,7 @@ function AddStockSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={locationIdField}>
-            Locație
+            {t('Locație')}
           </label>
           <select
             id={locationIdField}
@@ -843,7 +910,7 @@ function AddStockSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={expiryId}>
-            Data expirării (opțional)
+            {t('Data expirării (opțional)')}
           </label>
           <input
             id={expiryId}
@@ -855,7 +922,7 @@ function AddStockSheet({
           />
         </div>
         <div role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -864,7 +931,7 @@ function AddStockSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se salvează...' : 'Adaugă stoc'}
+          {isSubmitting ? t('Se salvează...') : t('Adaugă stoc')}
         </button>
       </form>
     </InventorySheet>
@@ -913,11 +980,11 @@ function ShopConfirmSheet({
   }
 
   return (
-    <InventorySheet title={`Cumpără · ${item.product.name}`} onClose={onClose}>
+    <InventorySheet title={t('Cumpără · {name}', { name: item.product.name })} onClose={onClose}>
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div>
           <label className="text-sm font-medium" htmlFor={quantityId}>
-            Cantitate
+            {t('Cantitate')}
           </label>
           <input
             id={quantityId}
@@ -932,7 +999,7 @@ function ShopConfirmSheet({
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor={unitId}>
-            Unitate
+            {t('Unitate')}
           </label>
           <select
             id={unitId}
@@ -949,7 +1016,7 @@ function ShopConfirmSheet({
           </select>
         </div>
         <div role="alert" aria-live="assertive" className="min-h-5 text-sm text-destructive">
-          {formError}
+          {formError ? t(formError) : null}
         </div>
         <button
           type="submit"
@@ -958,7 +1025,7 @@ function ShopConfirmSheet({
           className="flex h-touch min-h-touch w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground shadow-surface disabled:opacity-60"
         >
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-          {isSubmitting ? 'Se adaugă...' : 'Adaugă la cumpărături'}
+          {isSubmitting ? t('Se adaugă...') : t('Adaugă la cumpărături')}
         </button>
       </form>
     </InventorySheet>

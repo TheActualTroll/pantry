@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Canonical SQLite migrations, schema notes, and repository adapters for Pantry",
   "exports": {
-    "./d1": "./adapters/d1/index.ts"
+    "./d1": "./adapters/d1/index.ts",
+    "./sqlite": "./adapters/d1/sqlite-as-d1.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

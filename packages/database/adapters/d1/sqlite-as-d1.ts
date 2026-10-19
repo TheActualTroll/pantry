@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DatabaseSync } from 'node:sqlite'
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite'
 import type { D1DatabaseLike, D1PreparedStatementLike } from './d1-like.js'
 
 const writeQueues = new WeakMap<object, Promise<void>>()
@@ -24,51 +24,48 @@ export function migrationsDir(): string {
 }
 
 export function applyPantryMigrations(db: DatabaseSync): void {
-  db.exec('PRAGMA foreign_keys = ON')
-  db.exec(readFileSync(join(migrationsDir(), '0002_better_auth.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0003_profiles.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0004_households.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0005_inventory_mvp.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0006_open_facts.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0007_shopping.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0008_ai_cook.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0009_product_polish.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0010_household_sharing.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0011_settings_receipts.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0012_inventory_lot_edit.sql'), 'utf8'))
-  db.exec(readFileSync(join(migrationsDir(), '0013_household_product_images.sql'), 'utf8'))
+  runMigrations(db)
 }
 
 export function sqliteAsD1(db: DatabaseSync): D1DatabaseLike {
   return {
     prepare(query: string): D1PreparedStatementLike {
-      let params: unknown[] = []
-      const statement: D1PreparedStatementLike = {
+      let params: SQLInputValue[] = []
+      const runNow = () => {
+        db.prepare(query).run(...params)
+        return { success: true }
+      }
+      const statement: D1PreparedStatementLike & { runSync(): { success: boolean } } = {
         bind(...values: unknown[]) {
-          params = values
+          params = values as SQLInputValue[]
           return statement
         },
-        async first() {
+        async first<T = unknown>() {
           const row = db.prepare(query).get(...params)
-          return row ?? null
+          return (row ?? null) as T | null
         },
         async run() {
-          db.prepare(query).run(...params)
-          return { success: true }
+          return runNow()
         },
-        async all() {
-          return { results: db.prepare(query).all(...params) }
+        runSync() {
+          return runNow()
+        },
+        async all<T = unknown>() {
+          return { results: db.prepare(query).all(...params) as T[] }
         },
       }
       return statement
     },
     async batch(statements) {
       return enqueueWrite(db, async () => {
-        db.exec('BEGIN')
+        // Run every statement synchronously so no other request can interleave
+        // inside the transaction on this single shared connection.
+        db.exec('BEGIN IMMEDIATE')
         try {
           const results = []
           for (const statement of statements) {
-            results.push(await statement.run())
+            const sync = (statement as { runSync?: () => { success: boolean } }).runSync
+            results.push(sync ? sync.call(statement) : await statement.run())
           }
           db.exec('COMMIT')
           return results
@@ -93,4 +90,41 @@ export function insertProfile(db: DatabaseSync, id: string, displayName: string)
     `INSERT INTO profiles (id, display_name, locale, created_at, updated_at)
      VALUES (?, ?, 'ro', datetime('now'), datetime('now'))`,
   ).run(id, displayName)
+}
+
+/**
+ * Applies every `NNNN_*.sql` file in `dir` that has not been recorded yet, in
+ * name order. Each file runs in its own transaction.
+ */
+export function runMigrations(db: DatabaseSync, dir: string = migrationsDir()): string[] {
+  db.exec('PRAGMA foreign_keys = ON')
+  db.exec(
+    `CREATE TABLE IF NOT EXISTS _pantry_migrations (
+       name TEXT PRIMARY KEY,
+       applied_at TEXT NOT NULL
+     )`,
+  )
+  const applied = new Set(
+    (db.prepare('SELECT name FROM _pantry_migrations').all() as Array<{ name: string }>).map((row) => row.name),
+  )
+  const files = readdirSync(dir)
+    .filter((file) => /^\d{4}_.+\.sql$/.test(file))
+    .sort()
+  const ran: string[] = []
+  for (const file of files) {
+    if (applied.has(file)) {
+      continue
+    }
+    db.exec('BEGIN')
+    try {
+      db.exec(readFileSync(join(dir, file), 'utf8'))
+      db.prepare("INSERT INTO _pantry_migrations (name, applied_at) VALUES (?, datetime('now'))").run(file)
+      db.exec('COMMIT')
+    } catch (error) {
+      db.exec('ROLLBACK')
+      throw new Error(`Migration ${file} failed: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    ran.push(file)
+  }
+  return ran
 }

@@ -11,8 +11,8 @@ import struct
 import zlib
 from pathlib import Path
 
-BG = (247, 251, 248, 255)  # oklch(0.985 0.006 148) → #f7fbf8
-ACCENT = (23, 95, 51, 255)  # oklch(0.43 0.1 152) → #175f33
+BG = (244, 249, 246, 255)  # #f4f9f6
+ACCENT = (20, 103, 58, 255)  # #14673a
 
 PUBLIC = Path(__file__).resolve().parents[1] / "public"
 

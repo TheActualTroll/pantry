@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../../i18n/index'
 
 export function ProductImage({
   url,
@@ -14,7 +15,7 @@ export function ProductImage({
   decorative?: boolean
 }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
-  const label = name.trim() || 'Produs'
+  const label = name.trim() || t('Produs')
   const src = url && failedUrl !== url ? url : fallbackUrl && failedUrl !== fallbackUrl ? fallbackUrl : null
 
   useEffect(() => {

@@ -4,8 +4,8 @@ Pantry is an open-source-ready household inventory project currently under activ
 
 Deployment targets:
 
-- ☁️ Cloudflare
-- 🐳 Docker / self-hosted (planned after MVP)
+- 🚂 **Railway / Docker** — one Node container, SQLite on a volume (see [Deploy on Railway](#deploy-on-railway))
+- ☁️ Cloudflare Workers (D1 + R2) — still supported, see below
 
 Household inventory PWA. This repository is a pnpm monorepo.
 
@@ -16,6 +16,48 @@ Household inventory PWA. This repository is a pnpm monorepo.
 - `packages/shared` — shared TypeScript modules
 - `packages/database` — canonical SQL migrations and D1 adapters (local SQLite later)
 - `home-assistant` — Home Assistant integration and Lovelace card
+
+## Deploy on Railway
+
+The `Dockerfile` builds the PWA and a single Node server (`apps/web/server`) that serves the API and the static app. Data lives in SQLite (`$DATA_DIR/pantry.db`) and product photos in `$DATA_DIR/assets`, so **one replica and one volume** are required.
+
+1. **New project → Deploy from GitHub repo.** `railway.json` selects the Dockerfile and the `/api/v1/health` healthcheck.
+2. **Add a volume** to the service, mount path `/data`.
+3. **Variables** (see [.env.example](.env.example)):
+   - `BETTER_AUTH_SECRET` — `openssl rand -base64 32` (required, the server refuses to start without ≥32 chars)
+   - `GEMINI_API_KEY` — receipt scanning and recipes
+   - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` — push notifications (`pnpm --filter web vapid`)
+   - `BETTER_AUTH_URL` — optional on Railway; derived from `RAILWAY_PUBLIC_DOMAIN`
+4. **Generate a domain** (Settings → Networking). Keep replicas at 1.
+5. Open the app, create an account, and turn on notifications in Settings.
+
+Migrations in `packages/database/migrations` run automatically on boot. A consistent snapshot of the database is written daily to `$DATA_DIR/backups` (last `BACKUP_KEEP`, default 7); also enable Railway volume backups.
+
+Local Node run: `cd apps/web && pnpm build:node && BETTER_AUTH_SECRET=… BETTER_AUTH_URL=http://localhost:8080 pnpm start` (Node 24+, uses the built-in `node:sqlite`).
+
+### Security model
+
+- Same-origin API with `HttpOnly`, `Secure`, `SameSite=Lax` session cookies; sessions last 30 days.
+- Strict CSP (no inline scripts), HSTS in production, `frame-ancestors 'none'`, `nosniff`, no-referrer-leaks, camera-only permissions policy.
+- CSRF: cross-origin `POST/PUT/PATCH/DELETE` to `/api/*` is rejected by an `Origin` check.
+- Rate limits per client IP: sign-in 10/min, sign-up 5/min, auth 60/min, receipts and AI 20/min, API 300/min (`TRUSTED_PROXY_HOPS`, default 1 = Railway's proxy).
+- Request bodies capped at 4 MB; images are sniffed, not trusted by `Content-Type`.
+- Push endpoints are restricted to the public browser push services (no SSRF).
+- The container drops from root to the `node` user after fixing volume ownership; secrets are only read from the environment and the server fails fast when they are missing or placeholders.
+
+## Notifications
+
+Pantry sends Web Push reminders once a day (at the hour chosen in Settings, in the device time zone):
+
+- **Expiring soon** — lots expiring within the chosen lead time, or already expired.
+- **Running low** — products at or below their minimum stock.
+- **Stock checks for household items** (cleaning supplies, paper goods, …, *not* food) — the notification asks how much is left and has **None / All** buttons (kept to two to avoid accidental taps). Tapping one updates the inventory (none → empties stock and adds it to the shopping list; all → tops stock up to the most you have had on hand). "Half" is answered in the app, on the product card or the stock-check card.
+
+Products from Open Products Facts are household items by default; any product can be switched in its menu or when it is added. Android Chrome and desktop browsers show the action buttons. iPhone needs the app added to the Home Screen and does not render action buttons, so the same question appears as a card on the Inventory screen.
+
+## Languages
+
+The UI is available in Romanian and English (Settings → Language, also on the sign-in screens). The choice is stored on the profile and follows the account across devices; recipes and notifications are written in the same language. Strings live in `apps/web/src/i18n`; a test fails if a UI string is missing its English translation.
 
 ## Setup
 

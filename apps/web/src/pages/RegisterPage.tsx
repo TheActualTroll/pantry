@@ -6,6 +6,7 @@ import { authClient } from '../lib/auth-client'
 import { mapRegisterError } from '../lib/register-error'
 import { readReturnTo, resolvePostLoginPath } from '../lib/auth-redirect'
 import { validateRegisterInput } from '../lib/register-validation'
+import { t } from '../i18n/index'
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -88,15 +89,15 @@ export function RegisterPage() {
           height={64}
           className="size-16 rounded-xl border border-border bg-surface shadow-surface"
         />
-        <p className="mt-4 text-sm font-medium tracking-wide text-accent">Pantry</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight">Creează un cont</h1>
-        <p className="mt-2 max-w-xs text-muted">Începe să ții evidența inventarului casei.</p>
+        <p className="mt-4 text-sm font-medium tracking-wide text-accent">{t('Pantry')}</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">{t('Creează un cont')}</h1>
+        <p className="mt-2 max-w-xs text-muted">{t('Începe să ții evidența inventarului casei.')}</p>
       </header>
 
       <form className="mt-8 flex flex-col gap-4" noValidate onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" htmlFor={nameId}>
-            Nume
+            {t('Nume')}
           </label>
           <input
             id={nameId}
@@ -111,13 +112,13 @@ export function RegisterPage() {
             aria-invalid={fieldError?.field === 'name' ? true : undefined}
             aria-describedby={fieldError?.field === 'name' ? errorId : undefined}
             className="h-touch min-h-touch w-full rounded-lg border border-border bg-surface-elevated px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60"
-            placeholder="Numele tău"
+            placeholder={t('Numele tău')}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" htmlFor={emailId}>
-            Email
+            {t('Email')}
           </label>
           <input
             id={emailId}
@@ -132,14 +133,14 @@ export function RegisterPage() {
             aria-invalid={fieldError?.field === 'email' ? true : undefined}
             aria-describedby={fieldError?.field === 'email' ? errorId : undefined}
             className="h-touch min-h-touch w-full rounded-lg border border-border bg-surface-elevated px-3 text-text shadow-surface placeholder:text-muted disabled:opacity-60"
-            placeholder="nume@email.com"
+            placeholder={t('nume@email.com')}
           />
         </div>
 
         <PasswordField
           id={passwordId}
           name="password"
-          label="Parolă"
+          label={t('Parolă')}
           showLabel="Afișează parola"
           hideLabel="Ascunde parola"
           value={password}
@@ -154,7 +155,7 @@ export function RegisterPage() {
         <PasswordField
           id={confirmPasswordId}
           name="confirmPassword"
-          label="Confirmă parola"
+          label={t('Confirmă parola')}
           showLabel="Afișează confirmarea parolei"
           hideLabel="Ascunde confirmarea parolei"
           value={confirmPassword}
@@ -173,7 +174,7 @@ export function RegisterPage() {
           aria-atomic="true"
           className="min-h-5 text-sm text-destructive"
         >
-          {alertMessage}
+          {alertMessage ? t(alertMessage) : null}
         </div>
 
         <button
@@ -185,14 +186,14 @@ export function RegisterPage() {
           {isSubmitting ? (
             <LoaderCircle className="size-5 animate-spin" aria-hidden="true" />
           ) : null}
-          {isSubmitting ? 'Se creează contul...' : 'Creează cont'}
+          {isSubmitting ? t('Se creează contul...') : t('Creează cont')}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">
-        Ai deja cont?{' '}
+        {t('Ai deja cont?')}{' '}
         <Link to="/login" state={location.state} className="font-medium text-accent">
-          Conectează-te
+          {t('Conectează-te')}
         </Link>
       </p>
     </section>

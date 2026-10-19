@@ -88,7 +88,7 @@ ai.post('/ai/recipes/generate', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  await ensureProfile(c.env.DB, user)
+  const profile = await ensureProfile(c.env.DB, user)
 
   let payload: unknown
   try {
@@ -121,7 +121,7 @@ ai.post('/ai/recipes/generate', async (c) => {
     const generated = await generateRecipeFromInventory({
       inventory: items,
       request,
-      provider: createGeminiRecipeProvider(apiKey, model),
+      provider: createGeminiRecipeProvider(apiKey, model, profile.locale === 'en' ? 'en' : 'ro'),
     })
     const recipe = await recipes.createGeneratedRecipe({
       householdId: household.id,

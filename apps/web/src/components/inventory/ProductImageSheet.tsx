@@ -11,6 +11,7 @@ import {
 } from '../../lib/product-image'
 import { ProductImage } from '../scan/ProductImage'
 import { InventorySheet } from './InventorySheet'
+import { t } from '../../i18n/index'
 
 export function ProductImageSheet({
   product,
@@ -37,7 +38,7 @@ export function ProductImageSheet({
   const [busy, setBusy] = useState(false)
   const hasImage = productHasVisibleImage(product)
   const currentUrl = productDisplayImageUrl(product)
-  const title = hasImage ? 'Schimbă poza' : 'Adaugă poză'
+  const title = hasImage ? t('Schimbă poza') : t('Adaugă poză')
 
   useEffect(() => {
     return () => {
@@ -142,11 +143,11 @@ export function ProductImageSheet({
         <div>
           <img
             src={previewUrl}
-            alt="Previzualizare poză produs"
+            alt={t('Previzualizare poză produs')}
             className="max-h-64 w-full rounded-xl bg-surface object-contain"
           />
           <div role="alert" aria-live="assertive" className="mt-3 min-h-5 text-sm text-destructive">
-            {error}
+            {error ? t(error) : null}
           </div>
           <button
             type="button"
@@ -155,7 +156,7 @@ export function ProductImageSheet({
             onClick={() => void save()}
           >
             {busy ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {busy ? 'Se salvează...' : 'Salvează poza'}
+            {busy ? t('Se salvează...') : t('Salvează poza')}
           </button>
           <button
             type="button"
@@ -163,7 +164,7 @@ export function ProductImageSheet({
             className="mt-2 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium disabled:opacity-60"
             onClick={cancelSelection}
           >
-            Anulează
+            {t('Anulează')}
           </button>
         </div>
       ) : (
@@ -178,14 +179,14 @@ export function ProductImageSheet({
             className="mt-4 flex h-touch min-h-touch w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-accent-foreground"
             onClick={() => cameraRef.current?.click()}
           >
-            Fă o poză
+            {t('Fă o poză')}
           </button>
           <button
             type="button"
             className="mt-2 flex h-touch min-h-touch w-full items-center justify-center rounded-lg border border-border px-4 text-sm font-medium"
             onClick={() => galleryRef.current?.click()}
           >
-            Alege din galerie
+            {t('Alege din galerie')}
           </button>
           {product.hasCustomImage ? (
             <button
@@ -194,11 +195,11 @@ export function ProductImageSheet({
               className="mt-2 flex h-touch min-h-touch w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-destructive disabled:opacity-60"
               onClick={() => void removeCustom()}
             >
-              {product.imageUrl ? 'Revino la poza originală' : 'Elimină poza personalizată'}
+              {product.imageUrl ? t('Revino la poza originală') : t('Elimină poza personalizată')}
             </button>
           ) : null}
           <div role="alert" aria-live="assertive" className="mt-3 min-h-5 text-sm text-destructive">
-            {error}
+            {error ? t(error) : null}
           </div>
         </div>
       )}

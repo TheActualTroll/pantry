@@ -37,6 +37,9 @@ function item(partial: {
     lots: [],
     minimumQuantity: 0,
     lowStock: false,
+    kind: 'food',
+    stockLevel: null,
+    stockLevelAt: null,
   }
 }
 

@@ -234,3 +234,38 @@ export {
   receiptRateLimitRetryAfterSeconds,
   receiptRateLimitWindowStart,
 } from './receipt/rate-limit.js'
+export {
+  PRODUCT_KINDS,
+  STOCK_LEVELS,
+  defaultProductKind,
+  isStockCheckDue,
+  parseProductKind,
+  parseStockLevel,
+  planStockLevelChange,
+  type ProductKind,
+  type StockLevel,
+  type StockLevelPlan,
+} from './notification/stock-level.js'
+export {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  MAX_STOCK_CHECKS_PER_RUN,
+  localDateAndHour,
+  planNotifications,
+  stockLevelLabel,
+  type ExpiringCandidate,
+  type LowStockCandidate,
+  type NotificationKind,
+  type NotificationLocale,
+  type NotificationPreferences,
+  type PlannedNotification,
+  type PushAction,
+  type PushPayload,
+  type StockCheckCandidate,
+} from './notification/plan.js'
+export type {
+  NotificationStore,
+  PushSubscriptionInput,
+  PushSubscriptionRecord,
+  StockCheckDue,
+} from './ports/notification-store.js'
+export { isAllowedPushEndpoint } from './notification/endpoint.js'
